@@ -24,6 +24,8 @@ IMPLICIT NONE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!EMPLOYED!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 SUBROUTINE CALCULATE_CFL(N)
+!> @brief
+!> subroutine for computing the global time step size in 3D
 IMPLICIT NONE
 INTEGER,INTENT(IN)::N
 INTEGER::I,K,L,KMAXE,J,INGTMAX,INGTMIN,WHGU,WHGL
@@ -40,7 +42,7 @@ KMAXE=XMPIELRANK(N)
 		VELN=MAX(ABS(LAMx),ABS(LAMy),ABS(LAMz))
 		DT=MIN(DT,CCFL*((IELEM(N,I)%MINEDGE)/(ABS(VELN))))
 	END DO
-	!$END OMP DO
+	!$OMP END DO
 	END IF
 	
 	IF (ITESTCASE.EQ.3)THEN
@@ -49,11 +51,16 @@ KMAXE=XMPIELRANK(N)
 		LEFTV(1:NOF_vARIABLES)=U_C(I)%VAL(1,1:NOF_vARIABLES)
 		
 		CALL CONS2PRIM(N)
+		if (multispecies.eq.1)then
+		AGRT=SQRT((LEFTV(5)+MP_PINFL)*GAMMAl/LEFTV(1))
+		else
 		AGRT=SQRT(LEFTV(5)*GAMMA/LEFTV(1))
+		end if
+		
 		VELN=MAX(ABS(LEFTV(2)),ABS(LEFTV(3)),ABS(LEFTV(4)))+AGRT
 		DT=MIN(DT,CCFL*((IELEM(N,I)%MINEDGE)/(ABS(VELN))))
 	END DO
-	!$END OMP DO
+	!$OMP END DO
 	END IF
 	
 	
@@ -78,10 +85,14 @@ KMAXE=XMPIELRANK(N)
 		END IF
 		END IF
 		
-		DT=MIN(DT,CCFL*(1.0D0/((ABS(VELN)/((IELEM(N,I)%MINEDGE))) + (0.5D0*(LAML(1)+VISCL(1))/((IELEM(N,I)%MINEDGE))**2))))
+		
+		
+		
+		
+         DT=MIN(DT,CCFL*(1.0D0/((ABS(VELN)/((IELEM(N,I)%MINEDGE))) + (0.5D0*(LAML(1)+VISCL(1))/((IELEM(N,I)%MINEDGE))**2))))
                              
 	END DO
-	!$END OMP DO
+	!$OMP END DO
 	END IF
 	
 	
@@ -90,6 +101,8 @@ KMAXE=XMPIELRANK(N)
 END SUBROUTINE CALCULATE_CFL
 
 SUBROUTINE CALCULATE_CFLL(N)
+!> @brief
+!> subroutine for computing the time step size for each cell in 3D
 IMPLICIT NONE
 INTEGER,INTENT(IN)::N
 INTEGER::I,K,L,KMAXE,J,INGTMAX,INGTMIN,WHGU,WHGL
@@ -106,7 +119,7 @@ KMAXE=XMPIELRANK(N)
 		VELN=MAX(ABS(LAMx),ABS(LAMy),ABS(LAMz))
 		IELEM(N,I)%DTL=CCFL*((IELEM(N,I)%MINEDGE)/(ABS(VELN)))
 	END DO
-	!$END OMP DO
+	!$OMP END DO
 	END IF
 	
 	IF (ITESTCASE.EQ.3)THEN
@@ -119,7 +132,7 @@ KMAXE=XMPIELRANK(N)
 		VELN=MAX(ABS(LEFTV(2)),ABS(LEFTV(3)),ABS(LEFTV(4)))+AGRT
 		IELEM(N,I)%DTL=CCFL*((IELEM(N,I)%MINEDGE)/(ABS(VELN)))
 	END DO
-	!$END OMP DO
+	!$OMP END DO
 	END IF
 	
 	
@@ -149,7 +162,7 @@ KMAXE=XMPIELRANK(N)
 		IELEM(N,I)%DTL=CCFL*(1.0D0/((ABS(VELN)/((IELEM(N,I)%MINEDGE))) + (0.5D0*(LAML(1)+VISCL(1))/((IELEM(N,I)%MINEDGE))**2)))
 		
 	END DO
-	!$END OMP DO
+	!$OMP END DO
 	END IF
 	
 	
@@ -160,6 +173,8 @@ END SUBROUTINE CALCULATE_CFLL
 
 
 SUBROUTINE CALCULATE_CFL2D(N)
+!> @brief
+!> subroutine for computing the global time step size in 2D
 IMPLICIT NONE
 INTEGER,INTENT(IN)::N
 INTEGER::I,K,L,KMAXE,J,INGTMAX,INGTMIN,WHGU,WHGL
@@ -188,27 +203,24 @@ KMAXE=XMPIELRANK(N)
 		DT=MIN(DT,CCFL*((IELEM(N,I)%MINEDGE)/(ABS(VELN))))
 		
 	END DO
-	!$END OMP DO
+	!$OMP END DO
 	END IF
 	
 	IF (ITESTCASE.EQ.3)THEN
 	!$OMP DO REDUCTION (MIN:DT)
         DO I=1,KMAXE
 		LEFTV(1:NOF_vARIABLES)=U_C(I)%VAL(1,1:NOF_vARIABLES)
-		sum_dt1=zero
-		sum_dt2=zero
-		do j=1,ielem(n,i)%ifca
-		sum_dt1=sum_dt1+0.5d0*abs(IELEM(N,I)%FACEANGLEX(j))*IELEM(N,I)%SURF(j)
-		sum_dt2=sum_dt2+0.5d0*abs(IELEM(N,I)%FACEANGLEy(j))*IELEM(N,I)%SURF(j)
-		end do
 		CALL CONS2PRIM2D(N)
+		if (multispecies.eq.1)then
+		AGRT=SQRT((LEFTV(4)+MP_PINFL)*GAMMAl/LEFTV(1))
+		else
 		AGRT=SQRT(LEFTV(4)*GAMMA/LEFTV(1))
-		veln=((abs(leftv(2))+agrt)*sum_dt1)+((abs(leftv(3))+agrt)*sum_dt2)
+		end if
+		VELN=MAX(ABS(LEFTV(2)),ABS(LEFTV(3)))+AGRT
+		DT=MIN(DT,CCFL*((IELEM(N,I)%MINEDGE)/(ABS(VELN))))
 		
-		
-		DT=MIN(DT,CCFL*(ielem(n,i)%totvolume/veln))
 	END DO
-	!$END OMP DO
+	!$OMP END DO
 	END IF
 	
 	
@@ -234,7 +246,7 @@ KMAXE=XMPIELRANK(N)
 		
 		DT=MIN(DT,CCFL*(1.0D0/((ABS(VELN)/((IELEM(N,I)%MINEDGE))) + (0.5D0*(LAML(1)+VISCL(1))/((IELEM(N,I)%MINEDGE))**2))))
 	END DO
-	!$END OMP DO
+	!$OMP END DO
 	END IF
 	
 	
@@ -244,6 +256,8 @@ END SUBROUTINE CALCULATE_CFL2D
 
 
 SUBROUTINE CALCULATE_CFLL2D(N)
+!> @brief
+!> subroutine for computing the time step size for each cell in 2D
 IMPLICIT NONE
 INTEGER,INTENT(IN)::N
 INTEGER::I,K,L,KMAXE,J,INGTMAX,INGTMIN,WHGU,WHGL
@@ -260,7 +274,7 @@ KMAXE=XMPIELRANK(N)
 		VELN=MAX(ABS(LAMx),ABS(LAMy))
 		IELEM(N,I)%DTL=CCFL*((IELEM(N,I)%MINEDGE)/(ABS(VELN)))
 	END DO
-	!$END OMP DO
+	!$OMP END DO
 	END IF
 	
 	IF (ITESTCASE.EQ.3)THEN
@@ -273,7 +287,7 @@ KMAXE=XMPIELRANK(N)
 		VELN=MAX(ABS(LEFTV(2)),ABS(LEFTV(3)))+AGRT
 		IELEM(N,I)%DTL=CCFL*((IELEM(N,I)%MINEDGE)/(ABS(VELN)))
 	END DO
-	!$END OMP DO
+	!$OMP END DO
 	END IF
 	
 	
@@ -299,7 +313,7 @@ KMAXE=XMPIELRANK(N)
 		
 		IELEM(N,I)%DTL=CCFL*(1.0D0/((ABS(VELN)/((IELEM(N,I)%MINEDGE))) + (0.5D0*(LAML(1)+VISCL(1))/((IELEM(N,I)%MINEDGE))**2)))
 	END DO
-	!$END OMP DO
+	!$OMP END DO
 	END IF
 	
 	
@@ -317,6 +331,8 @@ END SUBROUTINE CALCULATE_CFLL2D
 ! ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 SUBROUTINE RUNGE_KUTTA3(N)
+!> @brief
+!> SSP RUNGE KUTTA 3RD-ORDER SCHEME
 IMPLICIT NONE
 INTEGER,INTENT(IN)::N
 INTEGER::IAVR,nvar,I,KMAXE
@@ -506,6 +522,8 @@ END IF
 END SUBROUTINE RUNGE_KUTTA3
 
 SUBROUTINE RUNGE_KUTTA1(N)
+!> @brief
+!> SSP FORWARD EULER SCHEME
 IMPLICIT NONE
 INTEGER,INTENT(IN)::N
 INTEGER::IAVR,nvar,I,KMAXE
@@ -595,6 +613,8 @@ END SUBROUTINE RUNGE_KUTTA1
 
 
 SUBROUTINE RUNGE_KUTTA2(N)
+!> @brief
+!> SSP RUNGE KUTTA 2ND-ORDER SCHEME
 IMPLICIT NONE
 INTEGER,INTENT(IN)::N
 INTEGER::IAVR,nvar,I,KMAXE
@@ -644,7 +664,7 @@ END IF
 DO I=1,KMAXE
   OOVOLUME=1.0D0/IELEM(N,I)%TOTVOLUME
   U_C(I)%VAL(2,1:NOF_VARIABLES)=U_C(I)%VAL(1,1:NOF_VARIABLES)
-  U_C(I)%VAL(1,1:NOF_VARIABLES)=U_C(I)%VAL(1,1:NOF_VARIABLES)-(DT*oo2*(RHS(I)%VAL(1:NOF_VARIABLES)*OOVOLUME))
+  U_C(I)%VAL(1,1:NOF_VARIABLES)=U_C(I)%VAL(1,1:NOF_VARIABLES)-(DT*(RHS(I)%VAL(1:NOF_VARIABLES)*OOVOLUME))
   
 END DO
 !$OMP END DO
@@ -653,7 +673,7 @@ if ((turbulence.gt.0).or.(passivescalar.gt.0))then
 DO I=1,KMAXE
   OOVOLUME=1.0D0/IELEM(N,I)%TOTVOLUME
   U_Ct(I)%VAL(2,1:turbulenceequations+passivescalar)=U_Ct(I)%VAL(1,1:turbulenceequations+passivescalar)
-  U_Ct(I)%VAL(1,1:turbulenceequations+passivescalar)=U_Ct(I)%VAL(1,1:turbulenceequations+passivescalar)-(DT*oo2*(RHSt(I)%VAL(1:turbulenceequations+passivescalar)*OOVOLUME))
+  U_Ct(I)%VAL(1,1:turbulenceequations+passivescalar)=U_Ct(I)%VAL(1,1:turbulenceequations+passivescalar)-(DT*(RHSt(I)%VAL(1:turbulenceequations+passivescalar)*OOVOLUME))
 END DO
 !$OMP END DO
  end if
@@ -698,7 +718,7 @@ END IF
 !$OMP DO
 DO I=1,KMAXE
  OOVOLUME=1.0D0/IELEM(N,I)%TOTVOLUME
-  U_C(I)%VAL(1,1:NOF_VARIABLES)=(U_C(I)%VAL(2,1:NOF_VARIABLES))-(dt*(RHS(I)%VAL(1:NOF_VARIABLES)*OOVOLUME))
+  U_C(I)%VAL(1,1:NOF_VARIABLES)=(oo2*U_C(I)%VAL(2,1:NOF_VARIABLES))+(oo2*U_C(I)%VAL(1,1:NOF_VARIABLES))-(dt*oo2*(RHS(I)%VAL(1:NOF_VARIABLES)*OOVOLUME))
 END DO
 !$OMP END DO
 
@@ -706,7 +726,7 @@ if ((turbulence.gt.0).or.(passivescalar.gt.0))then
 !$OMP DO
 DO I=1,KMAXE
   OOVOLUME=1.0D0/IELEM(N,I)%TOTVOLUME
-  U_Ct(I)%VAL(1,1:turbulenceequations+passivescalar)=(U_Ct(I)%VAL(2,1:turbulenceequations+passivescalar))-(dt*(RHSt(I)%VAL(1:turbulenceequations+passivescalar)*OOVOLUME))
+  U_Ct(I)%VAL(1,1:turbulenceequations+passivescalar)=(oo2*U_Ct(I)%VAL(2,1:turbulenceequations+passivescalar))+(oo2*U_Ct(I)%VAL(1,1:turbulenceequations+passivescalar))-(dt*oo2*(RHSt(I)%VAL(1:turbulenceequations+passivescalar)*OOVOLUME))
   END DO
 !$OMP END DO
  end if
@@ -732,6 +752,8 @@ END SUBROUTINE RUNGE_KUTTA2
 
 
 SUBROUTINE RUNGE_KUTTA5(N)
+!> @brief
+!> SSP RUNGE KUTTA 2ND-ORDER SCHEME FOR LOCAL TIME STEPPING
 IMPLICIT NONE
 INTEGER,INTENT(IN)::N
 INTEGER::IAVR,nvar,I,KMAXE
@@ -777,7 +799,8 @@ END IF
 !$OMP DO
 DO I=1,KMAXE
   OOVOLUME=1.0D0/IELEM(N,I)%TOTVOLUME
-  U_C(I)%VAL(1,1:NOF_VARIABLES)=U_C(I)%VAL(1,1:NOF_VARIABLES)-(ielem(n,i)%dtl*OO2*(RHS(I)%VAL(1:NOF_VARIABLES)*OOVOLUME))
+  U_C(I)%VAL(2,1:NOF_VARIABLES)=U_C(I)%VAL(1,1:NOF_VARIABLES)
+  U_C(I)%VAL(1,1:NOF_VARIABLES)=U_C(I)%VAL(1,1:NOF_VARIABLES)-(ielem(n,i)%dtl*(RHS(I)%VAL(1:NOF_VARIABLES)*OOVOLUME))
   
 END DO
 !$OMP END DO
@@ -786,7 +809,8 @@ if ((turbulence.gt.0).or.(passivescalar.gt.0))then
 !$OMP DO
 DO I=1,KMAXE
   OOVOLUME=1.0D0/IELEM(N,I)%TOTVOLUME
-  U_Ct(I)%VAL(1,1:turbulenceequations+passivescalar)=U_Ct(I)%VAL(1,1:turbulenceequations+passivescalar)-(ielem(n,i)%dtl*OO2*(RHSt(I)%VAL(1:turbulenceequations+passivescalar)*OOVOLUME))
+  U_Ct(I)%VAL(2,1:turbulenceequations+passivescalar)=U_Ct(I)%VAL(1,1:turbulenceequations+passivescalar)
+  U_Ct(I)%VAL(1,1:turbulenceequations+passivescalar)=U_Ct(I)%VAL(1,1:turbulenceequations+passivescalar)-(ielem(n,i)%dtl*(RHSt(I)%VAL(1:turbulenceequations+passivescalar)*OOVOLUME))
   END DO
 !$OMP END DO
  end if
@@ -830,7 +854,8 @@ END IF
 !$OMP DO
 DO I=1,KMAXE
   OOVOLUME=1.0D0/IELEM(N,I)%TOTVOLUME
-  U_C(I)%VAL(1,1:NOF_VARIABLES)=U_C(I)%VAL(1,1:NOF_VARIABLES)-(ielem(n,i)%dtl*OO2*(RHS(I)%VAL(1:NOF_VARIABLES)*OOVOLUME))
+  
+  U_C(I)%VAL(1,1:NOF_VARIABLES)=(oo2*U_C(I)%VAL(2,1:NOF_VARIABLES))+(oo2*U_C(I)%VAL(1,1:NOF_VARIABLES))-(ielem(n,i)%dtl*oo2*(RHS(I)%VAL(1:NOF_VARIABLES)*OOVOLUME))
 END DO
 !$OMP END DO
 
@@ -838,7 +863,7 @@ if ((turbulence.gt.0).or.(passivescalar.gt.0))then
 !$OMP DO
 DO I=1,KMAXE
   OOVOLUME=1.0D0/IELEM(N,I)%TOTVOLUME
-  U_Ct(I)%VAL(1,1:turbulenceequations+passivescalar)=U_Ct(I)%VAL(1,1:turbulenceequations+passivescalar)-(ielem(n,i)%dtl*OO2*(RHSt(I)%VAL(1:turbulenceequations+passivescalar)*OOVOLUME))
+  U_Ct(I)%VAL(1,1:turbulenceequations+passivescalar)=(oo2*U_Ct(I)%VAL(2,1:turbulenceequations+passivescalar))+(oo2*U_Ct(I)%VAL(1,1:turbulenceequations+passivescalar))-(ielem(n,i)%dtl*oo2*(RHSt(I)%VAL(1:turbulenceequations+passivescalar)*OOVOLUME))
   END DO
 !$OMP END DO
  end if
@@ -858,136 +883,8 @@ END IF
 END SUBROUTINE RUNGE_KUTTA5
 
 SUBROUTINE RUNGE_KUTTA5_2D(N)
-IMPLICIT NONE
-INTEGER,INTENT(IN)::N
-INTEGER::IAVR,nvar,I,KMAXE
-REAL::AVRGS,OOVOLUME,TO4,OO4,TO3,OO3
-KMAXE=XMPIELRANK(N)
-
-
-IF (FASTEST.EQ.1)THEN
-    CALL EXCHANGE_LOWER(N)
-    CALL ARBITRARY_ORDER2(N)
-    CALL EXHBOUNDHIGHER(N)
-    SELECT CASE(ITESTCASE)
-    CASE(1,2)
-    CALL CALCULATE_FLUXESHI2D(N)
-    CASE(3)
-    CALL CALCULATE_FLUXESHI_CONVECTIVE2D(N)
-    CASE(4)
-    CALL CALCULATE_FLUXESHI_CONVECTIVE2D(N)
-    CALL CALCULATE_FLUXESHI_DIFFUSIVE2D(N)
-    if (turbulence.eq.1)then
-    call SOURCES_COMPUTATION2d(N)
-    end if
-    END SELECT
-ELSE
-    CALL EXCHANGE_HIGHER(N)
-    CALL ARBITRARY_ORDER2(N)
-    CALL EXHBOUNDHIGHER(N)
-    SELECT CASE(ITESTCASE)
-    CASE(1,2)
-    CALL CALCULATE_FLUXESHI2D(N)
-    CASE(3)
-    CALL CALCULATE_FLUXESHI_CONVECTIVE2D(N)
-    CASE(4)
-    CALL CALCULATE_FLUXESHI_CONVECTIVE2D(N)
-    CALL CALCULATE_FLUXESHI_DIFFUSIVE2D(N)
-    if (turbulence.eq.1)then
-    call SOURCES_COMPUTATION2d(N)
-    end if
-    END SELECT
-END IF
-
-
-!$OMP DO
-DO I=1,KMAXE
-  OOVOLUME=1.0D0/IELEM(N,I)%TOTVOLUME
-  U_C(I)%VAL(1,1:NOF_VARIABLES)=U_C(I)%VAL(1,1:NOF_VARIABLES)-(ielem(n,i)%dtl*OO2*(RHS(I)%VAL(1:NOF_VARIABLES)*OOVOLUME))
-  
-END DO
-!$OMP END DO
-
-if ((turbulence.gt.0).or.(passivescalar.gt.0))then
-!$OMP DO
-DO I=1,KMAXE
-  OOVOLUME=1.0D0/IELEM(N,I)%TOTVOLUME
-  U_Ct(I)%VAL(1,1:turbulenceequations+passivescalar)=U_Ct(I)%VAL(1,1:turbulenceequations+passivescalar)-(ielem(n,i)%dtl*OO2*(RHSt(I)%VAL(1:turbulenceequations+passivescalar)*OOVOLUME))
-  END DO
-!$OMP END DO
- end if
-
-
-
-IF (FASTEST.EQ.1)THEN
-    CALL EXCHANGE_LOWER(N)
-    CALL ARBITRARY_ORDER2(N)
-    CALL EXHBOUNDHIGHER(N)
-    SELECT CASE(ITESTCASE)
-    CASE(1,2)
-    CALL CALCULATE_FLUXESHI2D(N)
-    CASE(3)
-    CALL CALCULATE_FLUXESHI_CONVECTIVE2D(N)
-    CASE(4)
-    CALL CALCULATE_FLUXESHI_CONVECTIVE2D(N)
-    CALL CALCULATE_FLUXESHI_DIFFUSIVE2D(N)
-    if (turbulence.eq.1)then
-    call SOURCES_COMPUTATION2d(N)
-    end if
-    call VORTEXCALC2D(N)
-    END SELECT
-ELSE
-    CALL EXCHANGE_HIGHER(N)
-    CALL ARBITRARY_ORDER2(N)
-    CALL EXHBOUNDHIGHER(N)
-    SELECT CASE(ITESTCASE)
-    CASE(1,2)
-    CALL CALCULATE_FLUXESHI2D(N)
-    CASE(3)
-    CALL CALCULATE_FLUXESHI_CONVECTIVE2D(N)
-    CASE(4)
-    CALL CALCULATE_FLUXESHI_CONVECTIVE2D(N)
-    CALL CALCULATE_FLUXESHI_DIFFUSIVE2D(N)
-    if (turbulence.eq.1)then
-    call SOURCES_COMPUTATION2d(N)
-    end if
-    call VORTEXCALC2D(N)
-    END SELECT
-END IF
-
-!$OMP DO
-DO I=1,KMAXE
-  OOVOLUME=1.0D0/IELEM(N,I)%TOTVOLUME
-  U_C(I)%VAL(1,1:NOF_VARIABLES)=U_C(I)%VAL(1,1:NOF_VARIABLES)-(ielem(n,i)%dtl*OO2*(RHS(I)%VAL(1:NOF_VARIABLES)*OOVOLUME))
-END DO
-!$OMP END DO
-
-if ((turbulence.gt.0).or.(passivescalar.gt.0))then
-!$OMP DO
-DO I=1,KMAXE
-  OOVOLUME=1.0D0/IELEM(N,I)%TOTVOLUME
-  U_Ct(I)%VAL(1,1:turbulenceequations+passivescalar)=U_Ct(I)%VAL(1,1:turbulenceequations+passivescalar)-(ielem(n,i)%dtl*OO2*(RHSt(I)%VAL(1:turbulenceequations+passivescalar)*OOVOLUME))
-  END DO
-!$OMP END DO
- end if
-
-
-
-IF (AVERAGING.EQ.1)THEN
-
- CALL AVERAGING_T(N)
- 
-END IF
-
-
-
-
-
-                        
-END SUBROUTINE RUNGE_KUTTA5_2D
-
-
-SUBROUTINE RUNGE_KUTTA2_2D(N)
+!> @brief
+!> SSP RUNGE KUTTA 2ND-ORDER SCHEME FOR LOCAL TIME STEPPING IN 2D
 IMPLICIT NONE
 INTEGER,INTENT(IN)::N
 INTEGER::IAVR,nvar,I,KMAXE
@@ -1034,7 +931,141 @@ END IF
 DO I=1,KMAXE
   OOVOLUME=1.0D0/IELEM(N,I)%TOTVOLUME
   U_C(I)%VAL(2,1:NOF_VARIABLES)=U_C(I)%VAL(1,1:NOF_VARIABLES)
-  U_C(I)%VAL(1,1:NOF_VARIABLES)=U_C(I)%VAL(2,1:NOF_VARIABLES)-(dt*oo2*(RHS(I)%VAL(1:NOF_VARIABLES)*OOVOLUME))
+  U_C(I)%VAL(1,1:NOF_VARIABLES)=U_C(I)%VAL(1,1:NOF_VARIABLES)-(ielem(n,i)%dtl*(RHS(I)%VAL(1:NOF_VARIABLES)*OOVOLUME))
+  
+END DO
+!$OMP END DO
+
+if ((turbulence.gt.0).or.(passivescalar.gt.0))then
+!$OMP DO
+DO I=1,KMAXE
+  OOVOLUME=1.0D0/IELEM(N,I)%TOTVOLUME
+  U_Ct(I)%VAL(2,1:turbulenceequations+passivescalar)=U_Ct(I)%VAL(1,1:turbulenceequations+passivescalar)
+  U_Ct(I)%VAL(1,1:turbulenceequations+passivescalar)=U_Ct(I)%VAL(1,1:turbulenceequations+passivescalar)-(ielem(n,i)%dtl*(RHSt(I)%VAL(1:turbulenceequations+passivescalar)*OOVOLUME))
+  END DO
+!$OMP END DO
+ end if
+
+
+
+IF (FASTEST.EQ.1)THEN
+    CALL EXCHANGE_LOWER(N)
+    CALL ARBITRARY_ORDER2(N)
+    CALL EXHBOUNDHIGHER(N)
+    SELECT CASE(ITESTCASE)
+    CASE(1,2)
+    CALL CALCULATE_FLUXESHI2D(N)
+    CASE(3)
+    CALL CALCULATE_FLUXESHI_CONVECTIVE2D(N)
+    CASE(4)
+    CALL CALCULATE_FLUXESHI_CONVECTIVE2D(N)
+    CALL CALCULATE_FLUXESHI_DIFFUSIVE2D(N)
+    if (turbulence.eq.1)then
+    call SOURCES_COMPUTATION2d(N)
+    end if
+    call VORTEXCALC2D(N)
+    END SELECT
+ELSE
+    CALL EXCHANGE_HIGHER(N)
+    CALL ARBITRARY_ORDER2(N)
+    CALL EXHBOUNDHIGHER(N)
+    SELECT CASE(ITESTCASE)
+    CASE(1,2)
+    CALL CALCULATE_FLUXESHI2D(N)
+    CASE(3)
+    CALL CALCULATE_FLUXESHI_CONVECTIVE2D(N)
+    CASE(4)
+    CALL CALCULATE_FLUXESHI_CONVECTIVE2D(N)
+    CALL CALCULATE_FLUXESHI_DIFFUSIVE2D(N)
+    if (turbulence.eq.1)then
+    call SOURCES_COMPUTATION2d(N)
+    end if
+    call VORTEXCALC2D(N)
+    END SELECT
+END IF
+
+!$OMP DO
+DO I=1,KMAXE
+  OOVOLUME=1.0D0/IELEM(N,I)%TOTVOLUME
+  U_C(I)%VAL(1,1:NOF_VARIABLES)=(oo2*U_C(I)%VAL(2,1:NOF_VARIABLES))+(oo2*U_C(I)%VAL(1,1:NOF_VARIABLES))-(ielem(n,i)%dtl*oo2*(RHS(I)%VAL(1:NOF_VARIABLES)*OOVOLUME))
+END DO
+!$OMP END DO
+
+if ((turbulence.gt.0).or.(passivescalar.gt.0))then
+!$OMP DO
+DO I=1,KMAXE
+  OOVOLUME=1.0D0/IELEM(N,I)%TOTVOLUME
+  U_Ct(I)%VAL(1,1:turbulenceequations+passivescalar)=(oo2*U_Ct(I)%VAL(2,1:turbulenceequations+passivescalar))+(oo2*U_Ct(I)%VAL(1,1:turbulenceequations+passivescalar))-(ielem(n,i)%dtl*oo2*(RHSt(I)%VAL(1:turbulenceequations+passivescalar)*OOVOLUME))
+  END DO
+!$OMP END DO
+ end if
+
+
+
+IF (AVERAGING.EQ.1)THEN
+
+ CALL AVERAGING_T(N)
+ 
+END IF
+
+
+
+
+
+                        
+END SUBROUTINE RUNGE_KUTTA5_2D
+
+
+SUBROUTINE RUNGE_KUTTA2_2D(N)
+!> @brief
+!> SSP RUNGE KUTTA 2ND-ORDER SCHEME IN 2D
+IMPLICIT NONE
+INTEGER,INTENT(IN)::N
+INTEGER::IAVR,nvar,I,KMAXE
+REAL::AVRGS,OOVOLUME,TO4,OO4,TO3,OO3
+KMAXE=XMPIELRANK(N)
+
+
+IF (FASTEST.EQ.1)THEN
+    CALL EXCHANGE_LOWER(N)
+    CALL ARBITRARY_ORDER2(N)
+    CALL EXHBOUNDHIGHER(N)
+    SELECT CASE(ITESTCASE)
+    CASE(1,2)
+    CALL CALCULATE_FLUXESHI2D(N)
+    CASE(3)
+    CALL CALCULATE_FLUXESHI_CONVECTIVE2D(N)
+    CASE(4)
+    CALL CALCULATE_FLUXESHI_CONVECTIVE2D(N)
+    CALL CALCULATE_FLUXESHI_DIFFUSIVE2D(N)
+    if (turbulence.eq.1)then
+    call SOURCES_COMPUTATION2d(N)
+    end if
+    END SELECT
+ELSE
+    CALL EXCHANGE_HIGHER(N)
+    CALL ARBITRARY_ORDER2(N)
+    CALL EXHBOUNDHIGHER(N)
+    SELECT CASE(ITESTCASE)
+    CASE(1,2)
+    CALL CALCULATE_FLUXESHI2D(N)
+    CASE(3)
+    CALL CALCULATE_FLUXESHI_CONVECTIVE2D(N)
+    CASE(4)
+    CALL CALCULATE_FLUXESHI_CONVECTIVE2D(N)
+    CALL CALCULATE_FLUXESHI_DIFFUSIVE2D(N)
+    if (turbulence.eq.1)then
+    call SOURCES_COMPUTATION2d(N)
+    end if
+    END SELECT
+END IF
+
+
+!$OMP DO
+DO I=1,KMAXE
+  OOVOLUME=1.0D0/IELEM(N,I)%TOTVOLUME
+  U_C(I)%VAL(2,1:NOF_VARIABLES)=U_C(I)%VAL(1,1:NOF_VARIABLES)
+  U_C(I)%VAL(1,1:NOF_VARIABLES)=U_C(I)%VAL(2,1:NOF_VARIABLES)-(dt*(RHS(I)%VAL(1:NOF_VARIABLES)*OOVOLUME))
   
 END DO
 !$OMP END DO
@@ -1045,7 +1076,7 @@ if ((turbulence.gt.0).or.(passivescalar.gt.0))then
 DO I=1,KMAXE
   OOVOLUME=1.0D0/IELEM(N,I)%TOTVOLUME
   U_Ct(I)%VAL(2,1:turbulenceequations+passivescalar)=U_Ct(I)%VAL(1,1:turbulenceequations+passivescalar)
-  U_Ct(I)%VAL(1,1:turbulenceequations+passivescalar)=U_Ct(I)%VAL(2,1:turbulenceequations+passivescalar)-(dt*oo2*(RHSt(I)%VAL(1:turbulenceequations+passivescalar)*OOVOLUME))
+  U_Ct(I)%VAL(1,1:turbulenceequations+passivescalar)=U_Ct(I)%VAL(2,1:turbulenceequations+passivescalar)-(dt*(RHSt(I)%VAL(1:turbulenceequations+passivescalar)*OOVOLUME))
   END DO
 !$OMP END DO
  end if
@@ -1089,7 +1120,7 @@ END IF
 !$OMP DO
 DO I=1,KMAXE
  OOVOLUME=1.0D0/IELEM(N,I)%TOTVOLUME
-  U_C(I)%VAL(1,1:NOF_VARIABLES)=U_C(I)%VAL(2,1:NOF_VARIABLES)-(dt*(RHS(I)%VAL(1:NOF_VARIABLES)*OOVOLUME))
+  U_C(I)%VAL(1,1:NOF_VARIABLES)=(oo2*U_C(I)%VAL(2,1:NOF_VARIABLES))+(oo2*U_C(I)%VAL(1,1:NOF_VARIABLES))-(dt*oo2*(RHS(I)%VAL(1:NOF_VARIABLES)*OOVOLUME))
 END DO
 !$OMP END DO
 
@@ -1120,6 +1151,8 @@ END SUBROUTINE RUNGE_KUTTA2_2D
 
 
 SUBROUTINE RUNGE_KUTTA1_2D(N)
+!> @brief
+!> SSP FORWARD EULER SCHEME IN 2D
 IMPLICIT NONE
 INTEGER,INTENT(IN)::N
 INTEGER::IAVR,nvar,I,KMAXE
@@ -1198,6 +1231,8 @@ END SUBROUTINE RUNGE_KUTTA1_2D
 
 
 SUBROUTINE RUNGE_KUTTA3_2D(N)
+!> @brief
+!> SSP RUNGE KUTTA 3RD-ORDER SCHEME IN 2D
 IMPLICIT NONE
 INTEGER,INTENT(IN)::N
 INTEGER::IAVR,nvar,I,KMAXE
@@ -1389,6 +1424,8 @@ END SUBROUTINE RUNGE_KUTTA3_2D
 
 
 SUBROUTINE RUNGE_KUTTA4(N)
+!> @brief
+!> SSP RUNGE KUTTA 4TH-ORDER SCHEME
 IMPLICIT NONE
 INTEGER,INTENT(IN)::N
 INTEGER::IAVR,nvar,I,KMAXE
@@ -1560,7 +1597,7 @@ DO I=1,KMAXE
    PRACE_T8=PRACE_T7+PRACE_T6
 
    FLOPS_COUNT=(((2*idegfree*nof_Variables*(imaxdegfree+1)*5)+(2*nof_Variables*nof_variables*idegfree*4)+(2*idegfree*nof_Variables*nof_variables*5)+(2*idegfree*nof_Variables*idegfree*5)+&
-                (QP_QUAD*2*6*3*3*3)+(QP_QUAD*3*2*5*6*5*5)+(5*5*5*2*QP_QUAD*6)+(QP_QUAD*nof_Variables*6*2)+(QP_QUAD*2*6)+(idegfree*QP_QUAD*6*iorder)+(20++300*IORDER*QP_QUAD*6+200+12000*QP_QUAD*6*2))/prace_t8)*1e-9*imaxe
+                (QP_QUAD*2*6*3*3*3)+(QP_QUAD*3*2*5*6*5*5)+(5*5*5*2*QP_QUAD*6)+(QP_QUAD*nof_Variables*6*2)+(QP_QUAD*2*6)+(idegfree*QP_QUAD*6*iorder)+(20+300*IORDER*QP_QUAD*6+200+12000*QP_QUAD*6*2))/prace_t8)*1e-9*imaxe
 
 
    
@@ -1814,6 +1851,8 @@ END SUBROUTINE RUNGE_KUTTA4
 
 
 SUBROUTINE RUNGE_KUTTA4_2D(N)
+!> @brief
+!> SSP RUNGE KUTTA 4TH-ORDER SCHEME IN 2D
 IMPLICIT NONE
 INTEGER,INTENT(IN)::N
 INTEGER::IAVR,nvar,I,KMAXE
@@ -2121,6 +2160,8 @@ END SUBROUTINE RUNGE_KUTTA4_2D
 
 
 SUBROUTINE IMPLICIT_TIMEs(N)
+!> @brief
+!> IMPLICIT APPROXIMATELY FACTORED TIME STEPPING SCHEME
 IMPLICIT NONE
 INTEGER::I,K,KMAXE,nvar,kill_nan
 INTEGER,INTENT(IN)::N
@@ -2190,7 +2231,7 @@ DO I=1,KMAXE
         write(600+n,*)ielem(n,i)%dih(:)
         kill_nan=1
     end if
-  U_C(I)%VAL(1,1:5)=U_C(I)%VAL(1,1:5)+IMPDU(I,1:5)
+  U_C(I)%VAL(1,1:nof_Variables)=U_C(I)%VAL(1,1:nof_Variables)+IMPDU(I,1:nof_Variables)
 END DO
 !$OMP END DO
     if (kill_nan.eq.1)then
@@ -2221,7 +2262,9 @@ END IF
 END SUBROUTINE IMPLICIT_TIMEs
 
 
-SUBROUTINE IMPLICIT_TIMEs_2d(N)
+SUBROUTINE IMPLICIT_TIMEs_2d(N) 
+!> @brief
+!> IMPLICIT APPROXIMATELY FACTORED TIME STEPPING SCHEME 2D
 IMPLICIT NONE
 INTEGER::I,K,KMAXE,nvar,kill_nan
 INTEGER,INTENT(IN)::N
@@ -2296,7 +2339,7 @@ DO I=1,KMAXE
     
     
 
-  U_C(I)%VAL(1,1:4)=U_C(I)%VAL(1,1:4)+IMPDU(I,1:4)
+  U_C(I)%VAL(1,1:nof_Variables)=U_C(I)%VAL(1,1:nof_Variables)+IMPDU(I,1:nof_Variables)
 END DO
 !$OMP END DO
 
@@ -2343,6 +2386,8 @@ END SUBROUTINE IMPLICIT_TIMEs_2d
 
 
 SUBROUTINE DUAL_TIME(N)
+!> @brief
+!> DUAL TIME STEPPING
 IMPLICIT NONE
 INTEGER::I,K,KMAXE,nvar,jj
 INTEGER,INTENT(IN)::N
@@ -2552,6 +2597,8 @@ END SUBROUTINE dual_time
 
 
 SUBROUTINE DUAL_TIME_2d(N)
+!> @brief
+!> DUAL TIME STEPPING 2D
 IMPLICIT NONE
 INTEGER::I,K,KMAXE,nvar,jj
 INTEGER,INTENT(IN)::N
@@ -2753,6 +2800,8 @@ END SUBROUTINE dual_time_2d
 
 
 SUBROUTINE AVERAGING_T(N)
+!> @brief
+!> TEMPORAL AVERAGING FOR UNSTEADY SIMULATIONS
 IMPLICIT NONE
 INTEGER,INTENT(IN)::N
 INTEGER::I,KMAXE,nvar
@@ -2895,6 +2944,8 @@ END SUBROUTINE AVERAGING_T
 ! ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 SUBROUTINE TIME_MARCHING(N)
+!> @brief
+!> TIME MARCHING SUBROUTINE 3D
 IMPLICIT NONE
 INTEGER,INTENT(IN)::N
 real,dimension(1:5)::DUMMYOUT,DUMMYIN
@@ -3012,7 +3063,8 @@ REAL::CPUT1,CPUT2,CPUT3,CPUT4,CPUT5,CPUT6,CPUT8,timec3,TIMEC1,TIMEC4,TIMEC8,TOTV
 					
 					
 					
-					
+			!$OMP END MASTER 
+			!$OMP BARRIER		
 			
 			
 			if (rungekutta.eq.11)then
@@ -3022,8 +3074,7 @@ REAL::CPUT1,CPUT2,CPUT3,CPUT4,CPUT5,CPUT6,CPUT8,timec3,TIMEC1,TIMEC4,TIMEC8,TOTV
 			DT=MIN(DT,OUT_TIME-T)
 			end if
 			
-			!$OMP END MASTER 
-			!$OMP BARRIER
+			
 			
 			SELECT CASE(RUNGEKUTTA)
 			
@@ -3113,7 +3164,11 @@ REAL::CPUT1,CPUT2,CPUT3,CPUT4,CPUT5,CPUT6,CPUT8,timec3,TIMEC1,TIMEC4,TIMEC8,TOTV
 
 ! 				end if
 			    end if
-			
+                IF ((MULTISPECIES.EQ.1).and.(initcond.eq.408))THEN
+			    if ( mod(it, 20) .eq. 0)then
+                    call TRAJECTORIES
+			    end if
+			    END IF
 			
 			
 			
@@ -3241,6 +3296,8 @@ END SUBROUTINE TIME_MARCHING
 
 
 SUBROUTINE TIME_MARCHING2(N)
+!> @brief
+!> TIME MARCHING SUBROUTINE 2D
 IMPLICIT NONE
 INTEGER,INTENT(IN)::N
 real,dimension(1:5)::DUMMYOUT,DUMMYIN
@@ -3267,6 +3324,7 @@ kmaxe=XMPIELRANK(n)
        if (outsurf.eq.1)then
       call SURF_WRITE
       end if
+      
       if ((Average_restart.eq.0).and.(averaging.eq.1)) then
 				Tz1=0.0
 				else
@@ -3338,6 +3396,11 @@ kmaxe=XMPIELRANK(n)
 
 ! 				end if
 			    end if
+			    IF ((MULTISPECIES.EQ.1).and.(initcond.eq.405))THEN
+			    if ( mod(it, 20) .eq. 0)then
+                    call TRAJECTORIES
+			    end if
+			    END IF
 			
 			
 			

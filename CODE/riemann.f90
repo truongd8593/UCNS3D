@@ -10,6 +10,8 @@ IMPLICIT NONE
  CONTAINS
 
 SUBROUTINE EXACT_RIEMANN_SOLVER(N,CLEFT,CRIGHT,NORMALVECT,HLLCFLUX)
+!> @brief
+!> Subroutine for linear advection IVP
 	IMPLICIT NONE
 	REAL,ALLOCATABLE,DIMENSION(:),INTENT(INOUT)::HLLCFLUX
 	INTEGER,INTENT(IN)::N
@@ -30,6 +32,8 @@ END SUBROUTINE EXACT_RIEMANN_SOLVER
 
 
 Subroutine HLLC_RIEMANN_SOLVER(N,CLEFT_ROT,CRIGHT_ROT,HLLCFLUX,ROTVL,ROTVR,GAMMA,SL,SR,SM)
+!> @brief
+!> HLLC Riemann solver in 3D
 	IMPLICIT NONE
 	INTEGER,INTENT(IN)::N
 	INTEGER::I,k
@@ -58,13 +62,13 @@ Subroutine HLLC_RIEMANN_SOLVER(N,CLEFT_ROT,CRIGHT_ROT,HLLCFLUX,ROTVL,ROTVR,GAMMA
 		FL=ZERO
 		FR=ZERO
 		!CONSERVATIVE VARIABLES TO PRIMITIVE
-		LEFTV(1:5)=CLEFT_ROT(1:5)
-		RIGHTV(1:5)=CRIGHT_ROT(1:5)
+		LEFTV(1:nof_Variables)=CLEFT_ROT(1:nof_Variables)
+		RIGHTV(1:nof_Variables)=CRIGHT_ROT(1:nof_Variables)
 		
 		CALL CONS2PRIM2(N)
 		
-		ROTVL(1:5)=LEFTV(1:5)
-		ROTVR(1:5)=RIGHTV(1:5)
+		ROTVL(1:nof_Variables)=LEFTV(1:nof_Variables)
+		ROTVR(1:nof_Variables)=RIGHTV(1:nof_Variables)
 		
 		IF ((TURBULENCE.EQ.1).OR.(PASSIVESCALAR.GT.0))THEN
 		
@@ -73,7 +77,7 @@ Subroutine HLLC_RIEMANN_SOLVER(N,CLEFT_ROT,CRIGHT_ROT,HLLCFLUX,ROTVL,ROTVR,GAMMA
 		
 		END IF
 		
-		CALL ESTIMATE_WAVES(N,ROTVL,ROTVR,SL,SM,SR,GAMMA)
+		!CALL ESTIMATE_WAVES(N,ROTVL,ROTVR,SL,SM,SR,GAMMA)
 		
 		
 		
@@ -94,6 +98,31 @@ Subroutine HLLC_RIEMANN_SOLVER(N,CLEFT_ROT,CRIGHT_ROT,HLLCFLUX,ROTVL,ROTVR,GAMMA
 ! 
 ! 			END IF
 			END IF
+			
+			
+			
+			
+			
+			IF (MULTISPECIES.EQ.1)THEN
+		sl(1)=min((ul)-sqrt(gammaL*(pl+MP_PINFl)/rl),(ur)-sqrt(gammaR*(pr+MP_PINFr)/rr))
+		sr(1)=max((ul)+sqrt(gammaL*(pl+MP_PINFl)/rl),(ur)+sqrt(gammaR*(pr+MP_PINFr)/rr))
+		ELSE
+        sl(1)=min((ul)-sqrt(gamma*pl/rl),(ur)-sqrt(gamma*pr/rr))
+		sr(1)=max((ul)+sqrt(gamma*pl/rl),(ur)+sqrt(gamma*pr/rr))	
+		END IF
+		sm(1)=(pr-pl+(rl*ul*(sl(1)-ul))-(rr*ur*(sr(1)-ur)))/((rl*(sl(1)-ul))-(rr*(sr(1)-ur)))
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
 
 
 			FL(1)=RL*UL
@@ -124,6 +153,10 @@ Subroutine HLLC_RIEMANN_SOLVER(N,CLEFT_ROT,CRIGHT_ROT,HLLCFLUX,ROTVL,ROTVR,GAMMA
 			ULSTAR(4)=MUL*WL
 			ULSTAR(5)=MUL*LASTL
 
+			if (MULTISPECIES.EQ.1)THEN
+			FL(6:8)=ROTVL(6:8)*UL
+            UlSTAR(6:8)=MUl*ROTVl(6:8)/rl
+			END IF
 			
 			URSTAR(1)=MUR
 			URSTAR(2)=MUR*SM(1)
@@ -136,26 +169,50 @@ Subroutine HLLC_RIEMANN_SOLVER(N,CLEFT_ROT,CRIGHT_ROT,HLLCFLUX,ROTVL,ROTVR,GAMMA
 			URSTAR(6:5+TURBULENCEEQUATIONS+PASSIVESCALAR)=MUR*RMR(1:0+TURBULENCEEQUATIONS+PASSIVESCALAR)/rr
 			END IF
 			
+			
+			
+			
+			if (MULTISPECIES.EQ.1)THEN
+			Fr(6:8)=ROTVr(6:8)*Ur
+            UrSTAR(6:8)=MUr*ROTVr(6:8)/rr
+			END IF
+			
+			
+			
 			FLSTAR(:)=FL(:)+SL(1)*(ULSTAR(:)-CLEFT_ROT(:))
 			FRSTAR(:)=FR(:)+SR(1)*(URSTAR(:)-CRIGHT_ROT(:))
 			
 			IF (SL(1).GE.ZERO)THEN
 				HLLCFLUX(:)=FL(:)
+				IF (MULTISPECIES.EQ.1)THEN
+                MP_SOURCE1=UL
+                END IF
 			END IF
 			IF (SR(1).LE.ZERO)THEN
 				HLLCFLUX(:)=FR(:)
+				IF (MULTISPECIES.EQ.1)THEN
+                MP_SOURCE1=UR
+                END IF
 			END IF
 			IF ((SL(1).LE.ZERO).AND.(SM(1).GE.ZERO))THEN
 				HLLCFLUX(:)=FLSTAR(:)
+				IF (MULTISPECIES.EQ.1)THEN
+                MP_SOURCE1=UL+SL(1)*(((SL(1)-UL)/(SL(1)-SM(1)))-1.0D0)
+                END IF
 			END IF
 			IF ((SR(1).GE.ZERO).AND.(SM(1).LE.ZERO))THEN
 				HLLCFLUX(:)=FRSTAR(:)
+				IF (MULTISPECIES.EQ.1)THEN
+                MP_SOURCE1=UR+SR(1)*(((SR(1)-UR)/(SR(1)-SM(1)))-1.0D0)
+                END IF
 			END IF
 
 END SUBROUTINE HLLC_RIEMANN_SOLVER
 
 
 SUBROUTINE ROE_RIEMANN_SOLVER(N,CLEFT,CRIGHT,HLLCFLUX,ROTVL,ROTVR,GAMMA,sl,sr,sm)
+!> @brief
+!> ROE Riemann solver in 3D
 	IMPLICIT NONE
 	INTEGER,INTENT(IN)::N
 	INTEGER::I,k
@@ -168,7 +225,7 @@ SUBROUTINE ROE_RIEMANN_SOLVER(N,CLEFT,CRIGHT,HLLCFLUX,ROTVL,ROTVR,GAMMA,sl,sr,sm
 	REAL::MUL,MUR,LASTL,LASTR
 	Real :: sqrtrhoL,sqrtrhoR,HL,HR,utilde,vtilde,wtilde,htilde,atilde,VelTilde
 	
-
+!ORIGINALLY OBTAINED FROM Katate Masatsuka, February 2009. http://www.cfdbooks.com
 
 !Input
  real:: primL(5), primR(5) ! Input: primitive variables
@@ -203,13 +260,13 @@ SUBROUTINE ROE_RIEMANN_SOLVER(N,CLEFT,CRIGHT,HLLCFLUX,ROTVL,ROTVR,GAMMA,sl,sr,sm
 
 ! Face normal vector (unit vector)
 
-                LEFTV(1:5)=CLEFT(1:5)
-		RIGHTV(1:5)=CRIGHT(1:5)
+                LEFTV(1:nof_Variables)=CLEFT(1:nof_Variables)
+		RIGHTV(1:nof_Variables)=CRIGHT(1:nof_Variables)
 		
 		CALL CONS2PRIM2(N)
 		
-		priml(1:5)=LEFTV(1:5)
-		primr(1:5)=RIGHTV(1:5)
+		priml(1:nof_Variables)=LEFTV(1:nof_Variables)
+		primr(1:nof_Variables)=RIGHTV(1:nof_Variables)
 
 !Primitive and other variables.
 
@@ -329,7 +386,7 @@ SUBROUTINE ROE_RIEMANN_SOLVER(N,CLEFT,CRIGHT,HLLCFLUX,ROTVL,ROTVR,GAMMA,sl,sr,sm
 
 ! This is the numerical flux: Roe flux = 1/2 *[  Fn(UL)+Fn(UR) - |An|(UR-UL) ]
 
-    HLLCFLUX(1:5)= half * (fL(1:5) + fR(1:5) - diss(1:5))
+    HLLCFLUX(1:nof_Variables)= half * (fL(1:nof_Variables) + fR(1:nof_Variables) - diss(1:nof_Variables))
 
 !Normal max wave speed in the normal direction.
 !  wsn = abs(qn) + a
@@ -339,6 +396,8 @@ SUBROUTINE ROE_RIEMANN_SOLVER(N,CLEFT,CRIGHT,HLLCFLUX,ROTVL,ROTVR,GAMMA,sl,sr,sm
 END SUBROUTINE ROE_RIEMANN_SOLVER
 
 SUBROUTINE tROE_RIEMANN_SOLVER(N,CLEFT,CRIGHT,HLLCFLUX,ROTVL,ROTVR,GAMMA,sl,sr,sm)
+!> @brief
+!> tROE Riemann solver in 3D
 	IMPLICIT NONE
 	INTEGER,INTENT(IN)::N
 	INTEGER::I,k
@@ -351,6 +410,7 @@ SUBROUTINE tROE_RIEMANN_SOLVER(N,CLEFT,CRIGHT,HLLCFLUX,ROTVL,ROTVR,GAMMA,sl,sr,s
 	REAL::MUL,MUR,LASTL,LASTR
 	Real :: sqrtrhoL,sqrtrhoR,HL,HR,utilde,vtilde,wtilde,htilde,atilde,VelTilde
 	
+!ORIGINALLY OBTAINED FROM Katate Masatsuka, February 2009. http://www.cfdbooks.com
 
 !Input
  real:: primL(5), primR(5) ! Input: primitive variables
@@ -384,13 +444,13 @@ real:: eig(4)                         ! Eigenvalues
 
 ! Face normal vector (unit vector)
 
-                LEFTV(1:5)=CLEFT(1:5)
-		RIGHTV(1:5)=CRIGHT(1:5)
+                LEFTV(1:nof_Variables)=CLEFT(1:nof_Variables)
+		RIGHTV(1:nof_Variables)=CRIGHT(1:nof_Variables)
 		
 		CALL CONS2PRIM2(N)
 		
-		priml(1:5)=LEFTV(1:5)
-		primr(1:5)=RIGHTV(1:5)
+		priml(1:nof_Variables)=LEFTV(1:nof_Variables)
+		primr(1:nof_Variables)=RIGHTV(1:nof_Variables)
 
 !Primitive and other variables.
    
@@ -575,7 +635,7 @@ real:: eig(4)                         ! Eigenvalues
 !   num_flux = half * (fL + fR - diss)
 ! This is the numerical flux: Roe flux = 1/2 *[  Fn(UL)+Fn(UR) - |An|(UR-UL) ]
 
-    HLLCFLUX(1:5)= half * (fL + fR - diss)
+    HLLCFLUX(1:nof_Variables)= half * (fL + fR - diss)
 
 !Normal max wave speed in the normal direction.
 !  wsn = abs(qn) + a
@@ -585,6 +645,8 @@ real:: eig(4)                         ! Eigenvalues
 END SUBROUTINE tROE_RIEMANN_SOLVER
 
 SUBROUTINE rROE_RIEMANN_SOLVER(N,CLEFT,CRIGHT,HLLCFLUX,ROTVL,ROTVR,GAMMA,sl,sr,sm)
+!> @brief
+!> rROE Riemann solver in 3D
 	IMPLICIT NONE
 	INTEGER,INTENT(IN)::N
 	INTEGER::I,k
@@ -597,7 +659,7 @@ SUBROUTINE rROE_RIEMANN_SOLVER(N,CLEFT,CRIGHT,HLLCFLUX,ROTVL,ROTVR,GAMMA,sl,sr,s
 	REAL::MUL,MUR,LASTL,LASTR
 	Real :: sqrtrhoL,sqrtrhoR,HL,HR,utilde,vtilde,wtilde,htilde,atilde,VelTilde
 	
-
+!ORIGINALLY OBTAINED FROM Katate Masatsuka, February 2009. http://www.cfdbooks.com
 !Input
  real:: primL(5), primR(5) ! Input: primitive variables
  real:: njk(3)             ! Input: face normal vector
@@ -630,13 +692,13 @@ real:: eig(4)                         ! Eigenvalues
 
 ! Face normal vector (unit vector)
 
-                LEFTV(1:5)=CLEFT(1:5)
-		RIGHTV(1:5)=CRIGHT(1:5)
+                LEFTV(1:nof_Variables)=CLEFT(1:nof_Variables)
+		RIGHTV(1:nof_Variables)=CRIGHT(1:nof_Variables)
 		
 		CALL CONS2PRIM2(N)
 		
-		priml(1:5)=LEFTV(1:5)
-		primr(1:5)=RIGHTV(1:5)
+		priml(1:nof_Variables)=LEFTV(1:nof_Variables)
+		primr(1:nof_Variables)=RIGHTV(1:nof_Variables)
 
 !Primitive and other variables.
    
@@ -902,7 +964,7 @@ real:: eig(4)                         ! Eigenvalues
 !   num_flux = (SRp*fL - SLm*fR)/(SRp-SLm) - half*diss
 ! This is the numerical flux: Roe flux = 1/2 *[  Fn(UL)+Fn(UR) - |An|(UR-UL) ]
 
-    HLLCFLUX(1:5)= (SRp*fL - SLm*fR)/(SRp-SLm) - half*diss
+    HLLCFLUX(1:nof_Variables)= (SRp*fL - SLm*fR)/(SRp-SLm) - half*diss
 
 !Normal max wave speed in the normal direction.
 !  wsn = abs(qn) + a
@@ -913,6 +975,8 @@ END SUBROUTINE rROE_RIEMANN_SOLVER
 
 
 Subroutine RUSANOV_RIEMANN_SOLVER(N,CLEFT_ROT,CRIGHT_ROT,HLLCFLUX,ROTVL,ROTVR,GAMMA,SL,SR,SM)
+!> @brief
+!> Rusanov Riemann solver in 3D
 	IMPLICIT NONE
 	INTEGER,INTENT(IN)::N
 	INTEGER::I,k
@@ -941,13 +1005,13 @@ Subroutine RUSANOV_RIEMANN_SOLVER(N,CLEFT_ROT,CRIGHT_ROT,HLLCFLUX,ROTVL,ROTVR,GA
 		FL=ZERO
 		FR=ZERO
 		!CONSERVATIVE VARIABLES TO PRIMITIVE
-		LEFTV(1:5)=CLEFT_ROT(1:5)
-		RIGHTV(1:5)=CRIGHT_ROT(1:5)
+		LEFTV(1:nof_Variables)=CLEFT_ROT(1:nof_Variables)
+		RIGHTV(1:nof_Variables)=CRIGHT_ROT(1:nof_Variables)
 		
 		CALL CONS2PRIM2(N)
 		
-		ROTVL(1:5)=LEFTV(1:5)
-		ROTVR(1:5)=RIGHTV(1:5)
+		ROTVL(1:nof_Variables)=LEFTV(1:nof_Variables)
+		ROTVR(1:nof_Variables)=RIGHTV(1:nof_Variables)
 		
 		
 		
@@ -959,7 +1023,7 @@ Subroutine RUSANOV_RIEMANN_SOLVER(N,CLEFT_ROT,CRIGHT_ROT,HLLCFLUX,ROTVL,ROTVR,GA
 		
 		END IF
 		
-		CALL ESTIMATE_WAVES(N,ROTVL,ROTVR,SL,SM,SR,GAMMA)
+		!CALL ESTIMATE_WAVES(N,ROTVL,ROTVR,SL,SM,SR,GAMMA)
 			!NOW CONDITIONS BASED ON WAVE SPEEDS!
 			RL=ROTVL(1);UL=ROTVL(2);VL=ROTVL(3);WL=ROTVL(4);PL=ROTVL(5);EL=CLEFT_ROT(5)
 			RR=ROTVR(1);UR=ROTVR(2);VR=ROTVR(3);WR=ROTVR(4);PR=ROTVR(5);ER=CRIGHT_ROT(5)
@@ -983,13 +1047,20 @@ Subroutine RUSANOV_RIEMANN_SOLVER(N,CLEFT_ROT,CRIGHT_ROT,HLLCFLUX,ROTVL,ROTVR,GA
 			FL(3)=RL*UL*VL
 			FL(4)=RL*UL*WL
 			FL(5)=UL*(EL+PL)
-			
+			if (MULTISPECIES.EQ.1)THEN
+			FL(6:8)=ROTVL(6:8)*UL
+    
+			END IF
 			
 			FR(1)=RR*UR
 			FR(2)=(RR*(UR**2))+PR
 			FR(3)=RR*UR*VR
 			FR(4)=RR*UR*WR
 			FR(5)=UR*(ER+PR)
+			
+			if (MULTISPECIES.EQ.1)THEN
+			FR(6:8)=ROTVR(6:8)*UR
+			END IF
 			
 			IF ((TURBULENCE.EQ.1).OR.(PASSIVESCALAR.GT.0))THEN
 			FL(6:5+TURBULENCEEQUATIONS+PASSIVESCALAR)=RML(1:0+TURBULENCEEQUATIONS+PASSIVESCALAR)*UL
@@ -999,11 +1070,16 @@ Subroutine RUSANOV_RIEMANN_SOLVER(N,CLEFT_ROT,CRIGHT_ROT,HLLCFLUX,ROTVL,ROTVR,GA
 			
 			
 			
-! 			
-! 			FLSTAR(:)=FL(:)+SL(1)*(ULSTAR(:)-CLEFT_ROT(:))
-! 			FRSTAR(:)=FR(:)+SR(1)*(URSTAR(:)-CRIGHT_ROT(:))
+
 			
-			
+			if (MULTISPECIES.EQ.1)THEN
+			sl(1)=abs(ul)+sqrt(gammaL*(pl+MP_PINFl)/rl)
+			sr(1)=abs(ur)+sqrt(gammaR*(pr+MP_PINFr)/rr)
+			MP_SOURCE1=0.5d0*(ul+ur)!(MAX(ABS(SL(1)),ABS(SR(1))))
+			ELSE
+			sl(1)=abs(ul)+sqrt(gamma*pl/rl)
+			sr(1)=abs(ur)+sqrt(gamma*pr/rr)
+			ENDIF
 			
 			
 			
@@ -1018,6 +1094,8 @@ END SUBROUTINE RUSANOV_RIEMANN_SOLVER
 
 
 SUBROUTINE ESTIMATE_WAVES(N,ROTVL,ROTVR,SL,SM,SR,GAMMA)
+!> @brief
+!> Wave speed estimates for 3D
 	IMPLICIT NONE
 	INTEGER,INTENT(IN)::N
 	INTEGER::I,K
@@ -1091,7 +1169,7 @@ SUBROUTINE ESTIMATE_WAVES(N,ROTVL,ROTVR,SL,SM,SR,GAMMA)
 
 !           Use Two-Shock Riemann solver with PVRS as estimate
  
-!           Change 20/11/2003 - introduce iterations with PVRS as initial guess
+!           introduce iterations with PVRS as initial guess
  
             DO K=1,4
              GEL = SQRT((G5*BL/RL)/(G6*PL + PPV))
@@ -1127,6 +1205,8 @@ END SUBROUTINE ESTIMATE_WAVES
 
 
 Subroutine HLLC_RIEMANN_SOLVER2d(N,CLEFT_ROT,CRIGHT_ROT,HLLCFLUX,ROTVL,ROTVR,GAMMA,SL,SR,SM)
+!> @brief
+!> HLLC Riemann solver in 2D
 	IMPLICIT NONE
 	INTEGER,INTENT(IN)::N
 	INTEGER::I,k,riem_adapt
@@ -1155,13 +1235,13 @@ Subroutine HLLC_RIEMANN_SOLVER2d(N,CLEFT_ROT,CRIGHT_ROT,HLLCFLUX,ROTVL,ROTVR,GAM
 		FL=ZERO
 		FR=ZERO
 		!CONSERVATIVE VARIABLES TO PRIMITIVE
-		LEFTV(1:4)=CLEFT_ROT(1:4)
-		RIGHTV(1:4)=CRIGHT_ROT(1:4)
+		LEFTV(1:nof_Variables)=CLEFT_ROT(1:nof_Variables)
+		RIGHTV(1:nof_Variables)=CRIGHT_ROT(1:nof_Variables)
 		
 		CALL CONS2PRIM2d2(N)
 		
-		ROTVL(1:4)=LEFTV(1:4)
-		ROTVR(1:4)=RIGHTV(1:4)
+		ROTVL(1:nof_Variables)=LEFTV(1:nof_Variables)
+		ROTVR(1:nof_Variables)=RIGHTV(1:nof_Variables)
 		
 		IF ((TURBULENCE.EQ.1).OR.(PASSIVESCALAR.GT.0))THEN
 		
@@ -1188,10 +1268,13 @@ Subroutine HLLC_RIEMANN_SOLVER2d(N,CLEFT_ROT,CRIGHT_ROT,HLLCFLUX,ROTVL,ROTVR,GAM
 			
 			
 			
-			
-			sl(1)=min((ul)-sqrt(gamma*pl/rl),(ur)-sqrt(gamma*pr/rr))
+		IF (MULTISPECIES.EQ.1)THEN
+		sl(1)=min((ul)-sqrt(gammaL*(pl+MP_PINFl)/rl),(ur)-sqrt(gammaR*(pr+MP_PINFr)/rr))
+		sr(1)=max((ul)+sqrt(gammaL*(pl+MP_PINFl)/rl),(ur)+sqrt(gammaR*(pr+MP_PINFr)/rr))	
+		ELSE
+        sl(1)=min((ul)-sqrt(gamma*pl/rl),(ur)-sqrt(gamma*pr/rr))
 		sr(1)=max((ul)+sqrt(gamma*pl/rl),(ur)+sqrt(gamma*pr/rr))	
-		
+		END IF
 		sm(1)=(pr-pl+(rl*ul*(sl(1)-ul))-(rr*ur*(sr(1)-ur)))/((rl*(sl(1)-ul))-(rr*(sr(1)-ur)))
 			
 			
@@ -1246,6 +1329,13 @@ Subroutine HLLC_RIEMANN_SOLVER2d(N,CLEFT_ROT,CRIGHT_ROT,HLLCFLUX,ROTVL,ROTVR,GAM
 			ULSTAR(3)=MUL*VL
 			
 			ULSTAR(4)=MUL*LASTL
+			
+			if (MULTISPECIES.EQ.1)THEN
+			FL(5:7)=ROTVL(5:7)*UL
+            UlSTAR(5:7)=MUl*ROTVl(5:7)/rl
+			END IF
+			
+			
 
 			
 			URSTAR(1)=MUR
@@ -1253,6 +1343,12 @@ Subroutine HLLC_RIEMANN_SOLVER2d(N,CLEFT_ROT,CRIGHT_ROT,HLLCFLUX,ROTVL,ROTVR,GAM
 			URSTAR(3)=MUR*VR
 			
 			URSTAR(4)=MUR*LASTR
+			
+			if (MULTISPECIES.EQ.1)THEN
+			FR(5:7)=ROTVR(5:7)*UR
+            URSTAR(5:7)=MUR*ROTVR(5:7)/rr
+			END IF
+			
 			
 			IF ((TURBULENCE.EQ.1).OR.(PASSIVESCALAR.GT.0))THEN
 			ULSTAR(5:4+TURBULENCEEQUATIONS+PASSIVESCALAR)=MUL*RML(1:0+TURBULENCEEQUATIONS+PASSIVESCALAR)/rl
@@ -1264,15 +1360,28 @@ Subroutine HLLC_RIEMANN_SOLVER2d(N,CLEFT_ROT,CRIGHT_ROT,HLLCFLUX,ROTVL,ROTVR,GAM
 			
 			IF (SL(1).GE.ZERO)THEN
 				HLLCFLUX(:)=FL(:)
+				IF (MULTISPECIES.EQ.1)THEN
+                MP_SOURCE1=UL
+                END IF
+				
 			END IF
 			IF (SR(1).LE.ZERO)THEN
 				HLLCFLUX(:)=FR(:)
+				IF (MULTISPECIES.EQ.1)THEN
+                MP_SOURCE1=UR
+                END IF
 			END IF
 			IF ((SL(1).LE.ZERO).AND.(SM(1).GE.ZERO))THEN
 				HLLCFLUX(:)=FLSTAR(:)
+				IF (MULTISPECIES.EQ.1)THEN
+                MP_SOURCE1=UL+SL(1)*(((SL(1)-UL)/(SL(1)-SM(1)))-1.0D0)
+                END IF
 			END IF
 			IF ((SR(1).GE.ZERO).AND.(SM(1).LE.ZERO))THEN
 				HLLCFLUX(:)=FRSTAR(:)
+				IF (MULTISPECIES.EQ.1)THEN
+                MP_SOURCE1=UR+SR(1)*(((SR(1)-UR)/(SR(1)-SM(1)))-1.0D0)
+                END IF
 			END IF
 			
 			
@@ -1301,6 +1410,8 @@ END SUBROUTINE HLLC_RIEMANN_SOLVER2d
 
 
 SUBROUTINE ROE_RIEMANN_SOLVER2d(N,Cleft,Cright,HLLCFLUX,ROTVL,ROTVR,GAMMA,SL,SR,SM)
+!> @brief
+!> Roe Riemann solver in 2D
 	IMPLICIT NONE
 	INTEGER,INTENT(IN)::N
 	INTEGER::I,k
@@ -1326,7 +1437,7 @@ SUBROUTINE ROE_RIEMANN_SOLVER2d(N,Cleft,Cright,HLLCFLUX,ROTVL,ROTVR,GAMMA,SL,SR,
  real :: ws(4),dws(4), Rv(4,4)          ! Wave speeds and right-eigevectors
  real :: fL(4), fR(4), diss(4)          ! Fluxes ad dissipation term
  integer ::  j
-
+!ORIGINALLY OBTAINED FROM Katate Masatsuka, February 2009. http://www.cfdbooks.com
 !Constants.
 
       
@@ -1335,8 +1446,8 @@ SUBROUTINE ROE_RIEMANN_SOLVER2d(N,Cleft,Cright,HLLCFLUX,ROTVL,ROTVR,GAMMA,SL,SR,
        one = 1.0
        two = 2.0
 
-       ul(1:4)=cleft(1:4)
-       ur(1:4)=cright(1:4)
+       ul(1:nof_Variables)=cleft(1:nof_Variables)
+       ur(1:nof_Variables)=cright(1:nof_Variables)
        
        
 !Tangent vector (Do you like it? Actually, Roe flux can be implemented 
@@ -1438,7 +1549,7 @@ SUBROUTINE ROE_RIEMANN_SOLVER2d(N,Cleft,Cright,HLLCFLUX,ROTVL,ROTVR,GAMMA,SL,SR,
   fR(3) = rhoR*vnR * vyR + pR*ny
   fR(4) = rhoR*vnR *  HR
 
-  hllcflux(1:4)= half * (fL(1:4) + fR(1:4) - diss(1:4))
+  hllcflux(1:nof_Variables)= half * (fL(1:nof_Variables) + fR(1:nof_Variables) - diss(1:nof_Variables))
 
 
 
@@ -1448,6 +1559,8 @@ END SUBROUTINE ROE_RIEMANN_SOLVER2d
 
 
 SUBROUTINE RROE_RIEMANN_SOLVER2d(N,Cleft,Cright,HLLCFLUX,ROTVL,ROTVR,GAMMA,SL,SR,SM)
+!> @brief
+!> rROE Riemann solver in 2D
 	IMPLICIT NONE
 	INTEGER,INTENT(IN)::N
 	INTEGER::I,k
@@ -1482,6 +1595,7 @@ real :: uL(4), uR(4)    !  Input: conservative variables rho*[1, u, v, E]
  integer ::  j
 
 !Constants.
+!ORIGINALLY OBTAINED FROM Katate Masatsuka, February 2009. http://www.cfdbooks.com
     
      fifth = 0.2
       half = 0.5
@@ -1489,8 +1603,8 @@ real :: uL(4), uR(4)    !  Input: conservative variables rho*[1, u, v, E]
        two = 2.0
        eps = tolsmall ! 1.0e-12 in the original paper (double precision)
        
-       UL(1:4)=CLEFT(1:4)
-       UR(1:4)=CRIGHT(1:4)
+       UL(1:nof_Variables)=CLEFT(1:nof_Variables)
+       UR(1:nof_Variables)=CRIGHT(1:nof_Variables)
 
 !Primitive and other variables.
 !  Left state
@@ -1664,6 +1778,8 @@ END SUBROUTINE RROE_RIEMANN_SOLVER2d
 
 
 Subroutine RUSANOV_RIEMANN_SOLVER2d(N,CLEFT_ROT,CRIGHT_ROT,HLLCFLUX,ROTVL,ROTVR,GAMMA,SL,SR,SM)
+!> @brief
+!> Rusanov Riemann solver in 2D
 	IMPLICIT NONE
 	INTEGER,INTENT(IN)::N
 	INTEGER::I,k
@@ -1692,13 +1808,13 @@ Subroutine RUSANOV_RIEMANN_SOLVER2d(N,CLEFT_ROT,CRIGHT_ROT,HLLCFLUX,ROTVL,ROTVR,
 		FL=ZERO
 		FR=ZERO
 		!CONSERVATIVE VARIABLES TO PRIMITIVE
-		LEFTV(1:4)=CLEFT_ROT(1:4)
-		RIGHTV(1:4)=CRIGHT_ROT(1:4)
+		LEFTV(1:nof_Variables)=CLEFT_ROT(1:nof_Variables)
+		RIGHTV(1:nof_Variables)=CRIGHT_ROT(1:nof_Variables)
 		
 		CALL CONS2PRIM2d2(N)
 		
-		ROTVL(1:4)=LEFTV(1:4)
-		ROTVR(1:4)=RIGHTV(1:4)
+		ROTVL(1:nof_Variables)=LEFTV(1:nof_Variables)
+		ROTVR(1:nof_Variables)=RIGHTV(1:nof_Variables)
 		
 		
 		
@@ -1710,7 +1826,7 @@ Subroutine RUSANOV_RIEMANN_SOLVER2d(N,CLEFT_ROT,CRIGHT_ROT,HLLCFLUX,ROTVL,ROTVR,
 		
 		END IF
 		
-		CALL ESTIMATE_WAVES2D(N,ROTVL,ROTVR,SL,SM,SR,GAMMA)
+		!CALL ESTIMATE_WAVES2D(N,ROTVL,ROTVR,SL,SM,SR,GAMMA)
 			!NOW CONDITIONS BASED ON WAVE SPEEDS!
 			RL=ROTVL(1);UL=ROTVL(2);VL=ROTVL(3);PL=ROTVL(4);EL=CLEFT_ROT(4)
 			RR=ROTVR(1);UR=ROTVR(2);VR=ROTVR(3);PR=ROTVR(4);ER=CRIGHT_ROT(4)
@@ -1735,12 +1851,20 @@ Subroutine RUSANOV_RIEMANN_SOLVER2d(N,CLEFT_ROT,CRIGHT_ROT,HLLCFLUX,ROTVL,ROTVR,
 			
 			FL(4)=UL*(EL+PL)
 			
+			if (MULTISPECIES.EQ.1)THEN
+			FL(5:7)=ROTVL(5:7)*UL
+    
+			END IF
+			
 			
 			FR(1)=RR*UR
 			FR(2)=(RR*(UR**2))+PR
 			FR(3)=RR*UR*VR
 			
 			FR(4)=UR*(ER+PR)
+			if (MULTISPECIES.EQ.1)THEN
+			FR(5:7)=ROTVR(5:7)*UR
+			END IF
 			
 			IF ((TURBULENCE.EQ.1).OR.(PASSIVESCALAR.GT.0))THEN
 			FL(5:4+TURBULENCEEQUATIONS+PASSIVESCALAR)=RML(1:0+TURBULENCEEQUATIONS+PASSIVESCALAR)*UL
@@ -1755,10 +1879,14 @@ Subroutine RUSANOV_RIEMANN_SOLVER2d(N,CLEFT_ROT,CRIGHT_ROT,HLLCFLUX,ROTVL,ROTVR,
 ! 			FRSTAR(:)=FR(:)+SR(1)*(URSTAR(:)-CRIGHT_ROT(:))
 			
 			
-			
+			if (MULTISPECIES.EQ.1)THEN
+			sl(1)=abs(ul)+sqrt(gammaL*(pl+MP_PINFl)/rl)
+			sr(1)=abs(ur)+sqrt(gammaR*(pr+MP_PINFr)/rr)
+			MP_SOURCE1=0.5D0*(ul+ur)!-0.5D0*(MAX(ABS(SL(1)),ABS(SR(1))))*(UR-UL)
+			ELSE
 			sl(1)=abs(ul)+sqrt(gamma*pl/rl)
 			sr(1)=abs(ur)+sqrt(gamma*pr/rr)
-			
+			ENDIF
 			
 			
 			HLLCFLUX(:)=0.5d0*(FL(:)+FR(:))-0.5d0*MAX(ABS(SL(1)),ABS(SR(1)))*(Cright_ROT(:)-Cleft_ROT(:))
@@ -1771,6 +1899,8 @@ END SUBROUTINE RUSANOV_RIEMANN_SOLVER2d
 
 
 SUBROUTINE ESTIMATE_WAVES2d(N,ROTVL,ROTVR,SL,SM,SR,GAMMA)
+!> @brief
+!> Waves speed estimates in 2D
 	IMPLICIT NONE
 	INTEGER,INTENT(IN)::N
 	INTEGER::I,K
@@ -1844,7 +1974,7 @@ SUBROUTINE ESTIMATE_WAVES2d(N,ROTVL,ROTVR,SL,SM,SR,GAMMA)
 
 !           Use Two-Shock Riemann solver with PVRS as estimate
  
-!           Change 20/11/2003 - introduce iterations with PVRS as initial guess
+!          introduce iterations with PVRS as initial guess
  
             DO K=1,20
              GEL = SQRT((G5*BL/RL)/(G6*PL + PPV))

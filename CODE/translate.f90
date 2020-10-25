@@ -7,6 +7,8 @@ integer,allocatable,dimension(:):: interray
 contains
 
 SUBROUTINE TRANSLATE_mesh
+!> @brief
+!> subroutine for transforming fluent style msh file to native format
 implicit none
 LOGICAL::HEREs
  CHARACTER(LEN=20)::PROC,starFILE
@@ -104,13 +106,16 @@ do
 	if ((ios .eq. -1))goto 11
 	countline=countline+1
 ! 	print*,'line',countlieq. "(0")ne !,dumc
-	      if (dumc .eq. "(0")  then ! COMMENT CONDITIONS
+	     ! if (dumc .eq. "(0")  then ! COMMENT CONDITIONS
+	      if (dumc .eq. "(0 ")  then ! COMMENT CONDITIONS
 		  read(82,*,IOSTAT=ios)
 		  countline=countline+1
 		  go to 10
 	      Endif
-	      if (dumc .eq. "(2") then
-	      read(82,*,IOSTAT=IOS)dimen
+! 	      if (dumc .eq. "(2") then
+! 	      read(82,*,IOSTAT=IOS)dimen
+	       if (dumc .eq. "(2 ") then
+       read(82,'(I1)',IOSTAT=IOS) dimen !changed by holger foysi
 		  countline=countline+1
 ! 	      print*,'Dimension:',dimen
 	      end if
@@ -1163,7 +1168,7 @@ do i=1,imaxfglobal
 	  case(7) !symmetry
 	  ibtr=3
 	
-	  case(8)	!periodicity
+	  case(8)!periodicity
 	  ibtr=5
 
 	  case(3)  !wall

@@ -10,6 +10,8 @@ IMPLICIT NONE
 ! ! ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! ! ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  REAL FUNCTION TRIANGLEAREA(N)
+!> @brief
+!> This function computes the area of a triangle in 3D
 IMPLICIT NONE
 INTEGER,INTENT(IN)::N
 	VVB(1:3)=VEXT(1,1:3)
@@ -38,6 +40,8 @@ END FUNCTION TRIANGLEAREA
 
 
  REAL FUNCTION QUADAREA(N)
+ !> @brief
+!> This function computes the area of a quadrilateral in 3D
 IMPLICIT NONE
 INTEGER,INTENT(IN)::N
 	
@@ -54,6 +58,8 @@ END FUNCTION QUADAREA
 
 
  REAL FUNCTION LINEAREA(N)
+ !> @brief
+!> This function computes the length of an edge in 2D
 IMPLICIT NONE
 INTEGER,INTENT(IN)::N
 	
@@ -70,6 +76,8 @@ INTEGER,INTENT(IN)::N
 END FUNCTION LINEAREA
 
 REAL FUNCTION QUADVOLUME(N)
+!> @brief
+!> This function computes the area of quad in 2D
 IMPLICIT NONE
 !!$OMP THREADPRIVATE(QUADVOLUME)
 INTEGER,INTENT(IN)::N
@@ -143,6 +151,8 @@ END FUNCTION QUADVOLUME
 
 
 REAL FUNCTION TRIANGLEVOLUME(N)
+!> @brief
+!> This function computes the area of triangle in 2D
 IMPLICIT NONE
 !!$OMP THREADPRIVATE(TRIANGLEVOLUME)
 INTEGER,INTENT(IN)::N
@@ -172,6 +182,8 @@ END FUNCTION TRIANGLEVOLUME
 
 ! ! ! ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 REAL FUNCTION TETRAVOLUME(N)
+!> @brief
+!> This function computes the volume of a tetrahedrals 
 
 IMPLICIT NONE
 !!$OMP THREADPRIVATE(TETRAVOLUME)
@@ -212,6 +224,8 @@ INTEGER,INTENT(IN)::N
 END FUNCTION TETRAVOLUME
 
 SUBROUTINE COMPUTEJACOBIANS
+!> @brief
+!> This function computes the jacobian of a tetrahedral
 IMPLICIT NONE
 
 
@@ -242,6 +256,8 @@ IMPLICIT NONE
 END SUBROUTINE COMPUTEJACOBIANs
 
 SUBROUTINE COMPUTeJACOBIANS2
+!> @brief
+!> This function computes the volume of a triangle
 implicit none
 VVA(1,1) = VEXT(2,1) - VEXT(1,1); 	 VVA(1,2) = VEXT(3,1) - VEXT(1,1)
 	  VVA(2,1) = VEXT(2,2) - VEXT(1,2); 	 VVA(2,2) = VEXT(3,2) - VEXT(1,2)
@@ -258,6 +274,8 @@ END SUBROUTINE COMPUTEJACOBIANS2
 
 
 REAL FUNCTION hexaVOLUME(N)
+!> @brief
+!> This function computes the volume of a hexahedral
 IMPLICIT NONE
 !!$OMP THREADPRIVATE(hexaVOLUME)
 INTEGER,INTENT(IN)::N
@@ -360,6 +378,8 @@ END FUNCTION hexaVOLUME
 
 
 REAL FUNCTION PYRAVOLUME(N)
+!> @brief
+!> This function computes the volume of a pyramid 
 IMPLICIT NONE
 !!$OMP THREADPRIVATE(PYRAVOLUME)
 INTEGER,INTENT(IN)::N
@@ -448,6 +468,8 @@ END FUNCTION PYRAVOLUME
 
 
 REAL FUNCTION PRISMVOLUME(N)
+!> @brief
+!> This function computes the volume of a prism 
 IMPLICIT NONE
 ! !$OMP THREADPRIVATE(PRISMVOLUME)
 INTEGER,INTENT(IN)::N
@@ -541,6 +563,8 @@ END FUNCTION PRISMVOLUME
 
 
  FUNCTION CORDINATES3(N,NODES_LIST,N_NODE)
+ !> @brief
+!> This function computes the centre of 3d element 
 IMPLICIT NONE
 INTEGER,INTENT(IN)::N,N_NODE
  REAL,DIMENSION(3)::CORDINATES3
@@ -556,6 +580,8 @@ end function CORDINATES3
 
 
  FUNCTION distance3(N)
+ !> @brief
+!> This function computes the distance between two points in 3D
 IMPLICIT NONE
 INTEGER,INTENT(IN)::N
  REAL::distance3
@@ -567,6 +593,8 @@ real::rnode
 end function distance3
 
  FUNCTION distance2(N)
+ !> @brief
+!> This function computes the distance between two points in 2D
 IMPLICIT NONE
 INTEGER,INTENT(IN)::N
  REAL::distance2
@@ -578,6 +606,8 @@ real::rnode
 end function distance2
 
  FUNCTION CORDINATES2(N,NODES_LIST,N_NODE)
+  !> @brief
+!> This function computes the centre of 2d element 
 IMPLICIT NONE
 INTEGER,INTENT(IN)::N,N_NODE
  REAL,DIMENSION(2)::CORDINATES2
@@ -594,6 +624,8 @@ end function CORDINATES2
 
 
 REAL FUNCTION CELL_CENTRE_CORD2(N,CORDS,NODES_LIST,N_NODE)
+ !> @brief
+!> This function computes the centre of 2d element 
 IMPLICIT NONE
 INTEGER,INTENT(IN)::N,N_NODE
 REAL,ALLOCATABLE,DIMENSION(:),INTENT(OUT)::CORDS
@@ -613,6 +645,8 @@ end function CELL_CENTRE_CORD2
 
 
 SUBROUTINE DECOMPOSE3
+ !> @brief
+!> This function decomposes element into tetrahedrals (counterclockwise numbering)
 IMPLICIT NONE
 
 ELEM_LISTD(:,:,:)=zero
@@ -699,6 +733,8 @@ end SUBROUTINE DECOMPOSE3
 
 
 subroutine DECOMPOSE2
+ !> @brief
+!> This function decomposes element into triangles (counterclockwise numbering)
 implicit none
 !!$OMP THREADPRIVATE(DECOMPOSE2)
 
@@ -723,6 +759,8 @@ end subroutine DECOMPOSE2
 
 
 SUBROUTINE EDGE_CALCULATOR(N)
+ !> @brief
+!> This subroutine computes the radius of inscribed sphere or circle
 IMPLICIT NONE
 INTEGER,INTENT(IN)::N
 INTEGER::I,KMAXE,L
@@ -745,7 +783,8 @@ KMAXE=XMPIELRANK(N)
 				  DIST=DISTANCE3(N)
 				  
 				
- 				  IELEM(N,I)%MINEDGE=MIN(DIST,IELEM(N,I)%MINEDGE)
+!  				  IELEM(N,I)%MINEDGE=DIST
+ 				   IELEM(N,I)%MINEDGE=MIN(DIST,IELEM(N,I)%MINEDGE)
 				  
 !                                      IELEM(N,I)%MINEDGE=dist*2
 	END DO
@@ -786,6 +825,8 @@ END IF
 END SUBROUTINE EDGE_CALCULATOR
 
 SUBROUTINE VOLUME_CALCULATOR3(N)
+ !> @brief
+!> This subroutine computes the volume of elements
 IMPLICIT NONE
 INTEGER,INTENT(IN)::N
 !$ integer::OMP_IN_PARALLEL,OMP_GET_THREAD_NUM
@@ -937,6 +978,8 @@ END SUBROUTINE VOLUME_CALCULATOR3
 
 
 SUBROUTINE VOLUME_CALCULATOR2(N)
+ !> @brief
+!> This subroutine computes the volume of elements in 2D
 IMPLICIT NONE
 INTEGER,INTENT(IN)::N
 !$ integer::OMP_IN_PARALLEL,OMP_GET_THREAD_NUM
@@ -1037,6 +1080,8 @@ END SUBROUTINE VOLUME_CALCULATOR2
 
 
 SUBROUTINE SURFACE_CALCULATOR3(N)
+ !> @brief
+!> This subroutine computes the surface area of elements in 3D
 IMPLICIT NONE
 INTEGER,INTENT(IN)::N
 !$ integer::OMP_IN_PARALLEL,OMP_GET_THREAD_NUM
@@ -1137,6 +1182,8 @@ END SUBROUTINE SURFACE_CALCULATOR3
 
 
 SUBROUTINE SURFACE_CALCULATOR2(N)
+ !> @brief
+!> This subroutine computes the length of edges of elements in 2D
 IMPLICIT NONE
 INTEGER,INTENT(IN)::N
 !$ integer::OMP_IN_PARALLEL,OMP_GET_THREAD_NUM
@@ -1182,6 +1229,8 @@ END SUBROUTINE SURFACE_CALCULATOR2
 
 
 SUBROUTINE COMPUTE_CENTRE3d(N,Iconsi)
+ !> @brief
+!> This subroutine computes the cell centre of elements in 3D
 IMPLICIT NONE
 INTEGER,INTENT(IN)::N,Iconsi
 integer::k
@@ -1196,6 +1245,8 @@ integer::k
 END SUBROUTINE
 
 SUBROUTINE COMPUTE_CENTRE3dF(N,Iconsi,facex,IXXFF)
+ !> @brief
+!> This subroutine retrieve the nodes of faces of elements in 3D
 IMPLICIT NONE
 INTEGER,INTENT(IN)::N,Iconsi,facex,IXXFF
 integer::k
@@ -1217,6 +1268,8 @@ END SUBROUTINE
 
 
 subroutine coordinates_face_inner(n,iconsidered,facex)
+ !> @brief
+!> This subroutine retrieve the nodes of interior faces of elements in 3D
 IMPLICIT NONE
 integer,intent(in)::n,iconsidered,facex
 integer::nnd
@@ -1245,6 +1298,8 @@ end subroutine coordinates_face_inner
 
 
 subroutine coordinates_face_inner2d(n,iconsidered,facex)
+ !> @brief
+!> This subroutine retrieves the nodes of edges of elements in 2D
 IMPLICIT NONE
 integer,intent(in)::n,iconsidered,facex
 integer::nnd
@@ -1267,7 +1322,64 @@ i=iconsidered
 end subroutine coordinates_face_inner2d
 
 
+subroutine coordinates_face_innerx(n,iconsidered,facex)
+ !> @brief
+!> This subroutine retrieve the nodes of interior faces of elements in 3D
+IMPLICIT NONE
+integer,intent(in)::n,iconsidered,facex
+integer::nnd
+integer::i,k
+i=iconsidered
+
+
+	      select case (ielem(n,iconsidered)%types_faces(facex))
+	      case(5)
+	      nnd=4
+	      case(6)
+	      nnd=3
+	      end select
+	      
+	      
+	      do K=1,nnd
+		  NODES_LIST(k,1:3)=inoder4(IELEM(N,I)%NODES_FACES(facex,K))%CORD(1:3)
+		  VEXT(K,1:3)=NODES_LIST(k,1:3)
+	      END DO
+	      
+	      
+	      N_NODE=NND
+	      
+	     
+end subroutine coordinates_face_innerx
+
+
+subroutine coordinates_face_inner2dx(n,iconsidered,facex)
+ !> @brief
+!> This subroutine retrieves the nodes of edges of elements in 2D
+IMPLICIT NONE
+integer,intent(in)::n,iconsidered,facex
+integer::nnd
+integer::i,k
+i=iconsidered
+
+
+	      nnd=2
+	      
+	      
+	      do K=1,nnd
+		  NODES_LIST(k,1:2)=inoder4(IELEM(N,I)%NODES_FACES(facex,K))%CORD(1:2)
+		  VEXT(K,1:2)=NODES_LIST(k,1:2)
+	      END DO
+	      
+	      
+	      N_NODE=NND
+	      
+	     
+end subroutine coordinates_face_inner2dx
+
+
 subroutine coordinates_face_PERIOD(n,iconsidered,facex)
+ !> @brief
+!> This subroutine retrieve the nodes of periodic faces of elements in 3D
 IMPLICIT NONE
 integer,intent(in)::n,iconsidered,facex
 integer::nnd
@@ -1311,6 +1423,8 @@ end subroutine coordinates_face_PERIOD
 
 
 subroutine coordinates_face_PERIOD2d(n,iconsidered,facex)
+ !> @brief
+!> This subroutine retrieve the nodes of periodic edges of elements in 2D
 IMPLICIT NONE
 integer,intent(in)::n,iconsidered,facex
 integer::nnd
@@ -1347,6 +1461,8 @@ end subroutine coordinates_face_PERIOD2d
 
 
 SUBROUTINE COMPUTE_CENTRE2dF(N,Iconsi,facex,IXXFF)
+ !> @brief
+!> This subroutine retrieves the nodes of the vertices of edges of 2D elements
 IMPLICIT NONE
 INTEGER,INTENT(IN)::N,Iconsi,facex,IXXFF
 integer::k
@@ -1363,6 +1479,8 @@ END SUBROUTINE
 
 
 SUBROUTINE COMPUTE_CENTRE2d(N,Iconsi)
+ !> @brief
+!> This subroutine retrieves the nodes of the vertices of 2D elements
 IMPLICIT NONE
 INTEGER,INTENT(IN)::N,Iconsi
 integer::k
@@ -1378,6 +1496,8 @@ END SUBROUTINE
 
 
 SUBROUTINE CENTRE(N)
+ !> @brief
+!> This subroutine computes the cell centres
 IMPLICIT NONE
 INTEGER,INTENT(IN)::N
 INTEGER::KMAXE,I
@@ -1415,6 +1535,8 @@ END IF
 END SUBROUTINE CENTRE
 
 SUBROUTINE QUADRATURETRIANG(N,IGQRULES)
+ !> @brief
+!> This subroutine computes the quadrature points and weights for triangle in 3D
 IMPLICIT NONE
 INTEGER,INTENT(IN)::IGQRULES,N
 INTEGER::Kk
@@ -1707,6 +1829,8 @@ END select
 END SUBROUTINE QUADRATURETRIANG
 
 SUBROUTINE QUADRATURETRIANGLE(N,IGQRULES)
+ !> @brief
+!> This subroutine computes the quadrature points and weights for triangle in 2D
 IMPLICIT NONE
 INTEGER,INTENT(IN)::IGQRULES,N
 INTEGER::Kk
@@ -1984,6 +2108,8 @@ END SUBROUTINE QUADRATURETRIANGLE
 
 
 SUBROUTINE QUADRATUREQUAD(N,IGQRULES)
+ !> @brief
+!> This subroutine computes the quadrature points and weights for quadrilateral in 2D
 IMPLICIT NONE
 INTEGER,INTENT(IN)::IGQRULES,N
 REAL::R,S,T,a,b,c,d,e,f
@@ -2152,9 +2278,9 @@ END SELECT
 		QPOINTS(:,:)=0.0d0
 		
 		  vvwg(:)=vvwg(:)*0.25d0
-		  WEQUA3D(:)=vvwg(:)
+! 		  WEQUA3D(:)=vvwg(:)
 		do kk=1,qp_quad
-			
+			 WEQUA3D(kk)=vvwg(kk)
 			R=VVR1(kk); S=VVR2(kk);
 			VVnxi(1)=(0.25d0)*(1.0d0-R)*(1.0d0-s)
 			VVnxi(2)=(0.25d0)*(1.0d0+R)*(1.0d0-s)
@@ -2178,6 +2304,8 @@ END SUBROUTINE QUADRATUREQUAD
 
 
 SUBROUTINE QUADRATUREQUAD3D(N,IGQRULES)
+ !> @brief
+!> This subroutine computes the quadrature points and weights for quadrilateral in 3D
 IMPLICIT NONE
 INTEGER,INTENT(IN)::IGQRULES,N
 REAL::R,S,T,a,b,c,d,e,f
@@ -2346,9 +2474,9 @@ END SELECT
 		QPOINTS2D(:,:)=0.0d0
 		
 		  vvwg(:)=vvwg(:)*0.25d0
-		  WEQUA2D(:)=vvwg(:)
+! 		  WEQUA2D(:)=vvwg(:)
 		do kk=1,qp_quad
-			
+			WEQUA2D(kk)=vvwg(kk)
 			R=VVR1(kk); S=VVR2(kk);
 			VVnxi(1)=(0.25d0)*(1.0d0-R)*(1.0d0-s)
 			VVnxi(2)=(0.25d0)*(1.0d0+R)*(1.0d0-s)
@@ -2370,6 +2498,8 @@ END SUBROUTINE QUADRATUREQUAD3D
 
 
 SUBROUTINE QUADRATURELINE(N,IGQRULES)
+ !> @brief
+!> This subroutine computes the quadrature points for a line
 IMPLICIT NONE
 INTEGER,INTENT(IN)::IGQRULES,N
 REAL::R,S,T,a,b,c,d,e,f,G,H,K
@@ -2564,9 +2694,9 @@ END SELECT
 		QPOINTS2D(:,:)=0.0d0
 		
 		  vvwg(:)=vvwg(:)*0.5d0
-		  WEQUA2D(:)=vvwg(:)
+! 		  WEQUA2D(:)=vvwg(:)
 		do kk=1,qp_LINE
-			
+			WEQUA2D(kk)=vvwg(kk)
 			R=VVR1(kk); 
 				
 			
@@ -2586,6 +2716,8 @@ END SUBROUTINE QUADRATURELINE
 
 
 SUBROUTINE QUADRATURETETRA(N,IGQRULES)
+ !> @brief
+!> This subroutine computes the quadrature points and weights for a tetrahedral
 IMPLICIT NONE
 INTEGER,INTENT(IN)::IGQRULES,N
 INTEGER::Kk
@@ -2704,6 +2836,8 @@ END select
 END SUBROUTINE QUADRATURETETRA
 
 SUBROUTINE QUADRATUREPRISM(N,IGQRULES)
+ !> @brief
+!> This subroutine computes the quadrature points and weights for a prism
 IMPLICIT NONE
 INTEGER,INTENT(IN)::IGQRULES,N
 REAL::R,S,T,a,b,c,d,e,f
@@ -2970,9 +3104,9 @@ CASE(6,7,8,9)
 END SELECT
 		QPOINTS(:,:)=0.0d0
 ! 		
-		  WEQUA3D(:)=vvwg(:)*0.5d0
+! 		  WEQUA3D(:)=vvwg(:)*0.5d0
 		do kk=1,qp_prism
-			
+			WEQUA3D(kk)=vvwg(kk)*0.5d0
 			
 			R=VVR1(kk); S=VVR2(kk); T=VVR3(kk)
 			VVnxi(1)=(0.5d0)*r*(1.0d0-t)
@@ -2997,6 +3131,8 @@ END SUBROUTINE QUADRATUREPRISM
 
 
 SUBROUTINE QUADRATUREPYRA(N,IGQRULES)
+ !> @brief
+!> This subroutine computes the quadrature points and weights for a pyramid
 IMPLICIT NONE
 INTEGER,INTENT(IN)::IGQRULES,N
 REAL::R,S,T,a,b,c,d,e,f,g
@@ -3181,9 +3317,9 @@ CASE(6,7,8,9)
 END SELECT
 		QPOINTS(:,:)=0.0d0
 
-		  WEQUA3D(:)=vvwg(:)*0.1250000000000
+! 		  WEQUA3D(:)=vvwg(:)*0.1250000000000
 		do kk=1,qp_pyra
-			
+			WEQUA3D(kk)=vvwg(kk)*0.1250000000000
 			
 			R=VVR1(kk); S=VVR2(kk); T=VVR3(kk)
 			VVnxi(1)=(0.1250000000000)*(1.0-R)*(1.0d0-s)*(1.0d0-t)
@@ -3208,6 +3344,8 @@ END SUBROUTINE QUADRATUREPYRA
 
 
 SUBROUTINE QUADRATUREHEXA(N,IGQRULES)
+ !> @brief
+!> This subroutine computes the quadrature points and weights for a hexahedral
 IMPLICIT NONE
 INTEGER,INTENT(IN)::IGQRULES,N
 REAL::R,S,T,a,b,c,d,e,f
@@ -3375,9 +3513,9 @@ END SELECT
 		QPOINTS(:,:)=0.0d0
 		
 		  vvwg(:)=vvwg(:)*0.125d0
-		  WEQUA3D(:)=vvwg(:)
+! 		  WEQUA3D(:)=vvwg(:)
 		do kk=1,qp_hexa
-			
+			WEQUA3D(kk)=vvwg(kk)
 			R=VVR1(kk); S=VVR2(kk); T=VVR3(kk)
 			VVnxi(1)=(0.125d0)*(1.0d0-R)*(1.0d0-s)*(1.0d0-t)
 			VVnxi(2)=(0.125d0)*(1.0d0+R)*(1.0d0-s)*(1.0d0-t)
@@ -3402,6 +3540,8 @@ END SELECT
 END SUBROUTINE QUADRATUREHEXA
 
 SUBROUTINE ROTATEF(N,TRI,ROTVECT,VECTCO,ANGLE1,ANGLE2)
+ !> @brief
+!> This subroutine rotates the vector of fluxes in the directions normal to the face in 3D 
 IMPLICIT NONE
 INTEGER,INTENT(IN)::N
 REAL,ALLOCATABLE,DIMENSION(:,:),INTENT(INOUT)::TRI
@@ -3440,13 +3580,17 @@ TRI(5,5)=1.0d0
 
 
 ROTVECT(1:5)=MATMUL(TRI(1:5,1:5),VECTCO(1:5))
-
+IF (MULTISPECIES.EQ.1)THEN
+ROTVECT(6:nof_Variables)=VECTCO(6:nof_Variables)
+END IF
 
 
 END SUBROUTINE ROTATEF
 
 
 SUBROUTINE ROTATEB(N,INVTRI,ROTVECT,VECTCO,ANGLE1,ANGLE2)
+ !> @brief
+!> This subroutine rotates back the vector of fluxes from the directions normal to the face to cartesian coordinates
 IMPLICIT NONE
 INTEGER,INTENT(IN)::N
 REAL,ALLOCATABLE,DIMENSION(:,:),INTENT(INOUT)::INVTRI
@@ -3483,11 +3627,17 @@ INVTRI(4,3)=-sia2!-SIN(ANGLE2)
 INVTRI(5,5)=1.0d0
 
 ROTVECT(1:5)=MATMUL(INVTRI(1:5,1:5),VECTCO(1:5))
+IF (MULTISPECIES.EQ.1)THEN
+ROTVECT(6:nof_Variables)=VECTCO(6:nof_Variables)
+END IF
+
 
 END SUBROUTINE ROTATEB
 
 
 SUBROUTINE ROTATEF2d(N,TRI,ROTVECT,VECTCO,ANGLE1,ANGLE2)
+ !> @brief
+!> This subroutine rotates the vector of fluxes in the directions normal to the edge in 2D
 IMPLICIT NONE
 INTEGER,INTENT(IN)::N
 REAL,ALLOCATABLE,DIMENSION(:,:),INTENT(INOUT)::TRI
@@ -3500,10 +3650,16 @@ ROTVECT(2)=(ANGLE1*VECTCO(2))+(ANGLE2*VECTCO(3))
 ROTVECT(3)=-(ANGLE2*VECTCO(2))+(ANGLE1*VECTCO(3))
 ROTVECT(4)=VECTCO(4)
 
+IF (MULTISPECIES.EQ.1)THEN
+ROTVECT(5:nof_Variables)=VECTCO(5:nof_Variables)
+END IF
+
 END SUBROUTINE ROTATEF2d
 
 
 SUBROUTINE ROTATEB2d(N,INVTRI,ROTVECT,VECTCO,ANGLE1,ANGLE2)
+ !> @brief
+!> This subroutine rotates back the vector of fluxes from the directions normal to the edge to cartesian coordinates
 IMPLICIT NONE
 INTEGER,INTENT(IN)::N
 REAL,ALLOCATABLE,DIMENSION(:,:),INTENT(INOUT)::INVTRI
@@ -3521,12 +3677,18 @@ ROTVECT(2)=(ANGLE1*VECTCO(2))-(ANGLE2*VECTCO(3))
 ROTVECT(3)=(ANGLE2*VECTCO(2))+(ANGLE1*VECTCO(3))
 ROTVECT(4)=VECTCO(4)
 
+IF (MULTISPECIES.EQ.1)THEN
+ROTVECT(5:nof_Variables)=VECTCO(5:nof_Variables)
+END IF
+
 END SUBROUTINE ROTATEB2d
 
 
 
 
 SUBROUTINE PROBEPOS(N,PROBEI)
+ !> @brief
+!> This subroutine establishes the cells where the probe positions belong to
 IMPLICIT NONE
 INTEGER,ALLOCATABLE,DIMENSION(:,:),INTENT(INOUT)::PROBEI
 INTEGER,INTENT(IN)::N
@@ -3563,7 +3725,7 @@ KMAXE=XMPIELRANK(N)
 		DUMIN=0.0d0
 		CALL MPI_ALLREDUCE(DUMOUT,DUMIN,1,MPI_DOUBLE_PRECISION,MPI_MIN,MPI_COMM_WORLD,IERROR)
 		CALL MPI_BARRIER(MPI_COMM_WORLD,IERROR)
-	IF (abs(DUMIN-DELTA).le.tolsmall) THEN
+	IF (abs(DUMIN-DELTA).le.1.0E-15) THEN
 	PROBEI(N,INV)=L
 	END IF
 	END DO
@@ -3594,7 +3756,7 @@ KMAXE=XMPIELRANK(N)
 		DUMIN=0.0d0
 		CALL MPI_ALLREDUCE(DUMOUT,DUMIN,1,MPI_DOUBLE_PRECISION,MPI_MIN,MPI_COMM_WORLD,IERROR)
 		CALL MPI_BARRIER(MPI_COMM_WORLD,IERROR)
-	IF (abs(DUMIN-DELTA).le.tolsmall) THEN
+	IF (abs(DUMIN-DELTA).le.1.0E-15) THEN
 	PROBEI(N,INV)=L
 	
 	END IF
@@ -3606,6 +3768,8 @@ END SUBROUTINE PROBEPOS
 
 
 SUBROUTINE  ANGLEX(ANGLEFACEX)
+ !> @brief
+!> This subroutine computes the angles according to the quadrant sign
 IMPLICIT NONE
 REAL,INTENT(INOUT)::ANGLEFACEX
 
@@ -3652,6 +3816,8 @@ END SUBROUTINE ANGLEX
 ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! !!!!!!!!!!!!!!!!!!!!
 ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 SUBROUTINE ANGLEY(ANGLEFACEY)
+ !> @brief
+!> This subroutine computes the angles according to the quadrant sign
 IMPLICIT NONE
 REAL,INTENT(INOUT)::ANGLEFACEY
 

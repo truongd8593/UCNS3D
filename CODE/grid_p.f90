@@ -1,4 +1,6 @@
 MODULE LIBRARY
+!> @brief
+!> This module includes all the subroutines related to stencils and neighbours establishing
 USE MPIINFO
 USE DECLARATION
 USE IO
@@ -9,20 +11,26 @@ IMPLICIT NONE
 CONTAINS
 
 subroutine tolerances
+!> @brief
+!> This subroutine specifies the tolerances and other fixed numbers used throughout the code
 implicit none
 
-tolsmall=1.0e-13
+tolsmall=1.0e-8
 TOLBIG=1.0E+13
 oo2=1.0d0/2.0d0
 zero=0.0d0
 ! PI=(ACOS(zero))*2
 PI=4.0D0*ATAN(1.0D0)
+alpha=1.0D0
+BETA=ZERO
 
 end subroutine tolerances
 
 
 
 FUNCTION DETERMINA(EIGVL)
+!> @brief
+!> This function computes the determinant of a matrix
 IMPLICIT NONE
 REAL,ALLOCATABLE,DIMENSION(:,:),INTENT(IN)::EIGVL
 REAL,DIMENSION(5,5)::MATRIX
@@ -93,6 +101,8 @@ END FUNCTION DETERMINA
 ! !---------------------------------------------------------------------------------------------!
 
 SUBROUTINE TIMERS(N,CPUX1,CPUX2,CPUX3,CPUX4,CPUX5,CPUX6,TIMEX1,TIMEX2,TIMEX3,TIMEX4,TIMEX5,TIMEX6)
+!> @brief
+!> This subroutine establishes the timers
 REAL,ALLOCATABLE,DIMENSION(:),INTENT(IN)::CPUX1,CPUX2,CPUX3,CPUX4,CPUX5,CPUX6
 REAL,ALLOCATABLE,DIMENSION(:),INTENT(INOUT)::TIMEX1,TIMEX2,TIMEX3,TIMEX4,TIMEX5,TIMEX6
 INTEGER,INTENT(IN)::N
@@ -133,6 +143,8 @@ END SUBROUTINE TIMERS
 
 
 SUBROUTINE XMPIFIND(XMPIE,XMPIN,XMPIELRANK,XMPINRANK,IMAXE,IMAXN,NPROC)
+!> @brief
+!> This subroutine finds the number of elements in each process
 IMPLICIT NONE
 INTEGER,ALLOCATABLE,DIMENSION(:),INTENT(INOUT)::XMPIE
 INTEGER,ALLOCATABLE,DIMENSION(:),INTENT(INOUT)::XMPIN
@@ -162,6 +174,8 @@ END SUBROUTINE XMPIFIND
 
 
 SUBROUTINE GLOBALIST(N,XMPIE,XMPIL,XMPIELRANK,IMAXE,ISIZE,CENTERR,GLNEIGH,IELEM)
+!> @brief
+!> This subroutine establishes the connectivity within each process
 IMPLICIT NONE
 INTEGER,ALLOCATABLE,DIMENSION(:),INTENT(IN)::XMPIE
 INTEGER,ALLOCATABLE,DIMENSION(:),INTENT(INOUT)::XMPIL
@@ -467,6 +481,8 @@ CALL MPI_BARRIER(MPI_COMM_WORLD,IERROR)
 END SUBROUTINE GLOBALIST
 
 SUBROUTINE GLOBALIST2(N,XMPIE,XMPIL,XMPIELRANK,IMAXE,ISIZE,CENTERR,GLNEIGH,IELEM)
+!> @brief
+!> This subroutine establishes the connectivity with elements from other processes
 IMPLICIT NONE
 INTEGER,ALLOCATABLE,DIMENSION(:),INTENT(IN)::XMPIE
 INTEGER,ALLOCATABLE,DIMENSION(:),INTENT(INOUT)::XMPIL
@@ -750,6 +766,8 @@ END SUBROUTINE GLOBALIST2
 
 
 SUBROUTINE GLOBALISTX(N,XMPIE,XMPIL,XMPIELRANK,IMAXE,ISIZE,CENTERR,GLNEIGH,IELEM)
+!> @brief
+!> This subroutine establishes the connectivity within each process without using a global list
 IMPLICIT NONE
 INTEGER,ALLOCATABLE,DIMENSION(:),INTENT(IN)::XMPIE
 INTEGER,ALLOCATABLE,DIMENSION(:),INTENT(INOUT)::XMPIL
@@ -793,6 +811,8 @@ END SUBROUTINE GLOBALISTX
 
 
 SUBROUTINE GLOBALISTX2(N,XMPIE,XMPIL,XMPIELRANK,IMAXE,ISIZE,CENTERR,GLNEIGH,IELEM)
+!> @brief
+!> This subroutine establishes the connectivity with elements from other processes without a global list
 IMPLICIT NONE
 INTEGER,ALLOCATABLE,DIMENSION(:),INTENT(IN)::XMPIE
 INTEGER,ALLOCATABLE,DIMENSION(:),INTENT(INOUT)::XMPIL
@@ -901,7 +921,7 @@ KJ=0
 	
 	n_requests = 0
       allocate(requests(2*ifst))					!3 ALLOCATE(REQUESTS)
-	
+	requests(:)=0
 	do i=0,isize-1
 	
 		  IF (cand(i).gt.0)THEN
@@ -1199,6 +1219,8 @@ END SUBROUTINE GLOBALISTX2
 
 
 SUBROUTINE GLOBALDEA
+!> @brief
+!> This subroutine deallocates the memory used for establishing the connectivity
 IMPLICIT NONE
  CALL MPI_BARRIER(MPI_COMM_WORLD,IERROR)
     if ((typesten.gt.1).or.(icompact.ge.1))then
@@ -1213,6 +1235,8 @@ IMPLICIT NONE
 
 
 SUBROUTINE XMPILOCAL
+!> @brief
+!> This subroutine establishes the local numbering of the cells
 IMPLICIT NONE
 INTEGER::I,KMAXE,count_block
 INTEGER,ALLOCATABLE,DIMENSION(:)::XMPIC,BIN,VAL
@@ -1344,6 +1368,8 @@ END SUBROUTINE XMPILOCAL
 
 
 SUBROUTINE COUNT_WALLS
+!> @brief
+!> This subroutine allocates the appropriate memory for bounded walls indexing for writing files
 IMPLICIT NONE
 INTEGER::I,KMAXE,ILOOP,j
 INTEGER,ALLOCATABLE,DIMENSION(:)::BIN,VAL
@@ -1418,17 +1444,15 @@ END SUBROUTINE COUNT_WALLS
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
-SUBROUTINE MPIINIT(N,ISIZE,MPI_COMM_WORLD,IERROR)
-IMPLICIT NONE
-INTEGER,INTENT(INOUT)::N,ISIZE,MPI_COMM_WORLD,IERROR
-CALL MPI_INIT(IERROR)
-CALL MPI_COMM_DUP(MPI_COMM_WORLD,MPI_COMM_WORLD,IERROR)
-CALL MPI_COMM_SIZE(MPI_COMM_WORLD,ISIZE,IERROR)
-CALL MPI_COMM_RANK(MPI_COMM_WORLD,N,IERROR)
 
-END SUBROUTINE MPIINIT
+
+
+
+
 
 SUBROUTINE INVERF(R,INVR,IVGT)
+!> @brief
+!> This subroutine inverts some special matrices
   IMPLICIT NONE
   INTEGER,INTENT(IN)::IVGT
   REAL,INTENT(IN) ::R(1:IVGT-1,1:IVGT-1)
@@ -1452,6 +1476,8 @@ SUBROUTINE INVERF(R,INVR,IVGT)
  End subroutine INVERF
 
 SUBROUTINE ALLOCATEVECTORS(N,TRI,INVTRI,ROTVECT,VECTCO,VEIGL,VEIGR,RVEIGL,RVEIGR,EIGVL,EIGVR)
+!> @brief
+!> This subroutine allocates vectors and matrices frequently used
 IMPLICIT NONE
 INTEGER,INTENT(IN)::N
 REAL,ALLOCATABLE,DIMENSION(:,:),INTENT(INOUT)::TRI
@@ -1496,6 +1522,8 @@ END SUBROUTINE ALLOCATEVECTORS
 ! !!!!!!!!!!!!!!!!!!SUBROUTINE CALLED INITIALLY TO ALLOCATE MEMORY FOR STENCIL!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	SUBROUTINE LOCALSTALLOCATION(N,XMPIELRANK,ILOCALSTENCIL,TYPESTEN,NUMNEIGHBOURS)
+!> @brief
+!> This subroutine memory for stencil allocation for all cells
 	IMPLICIT NONE
 	INTEGER,ALLOCATABLE,DIMENSION(:,:,:,:),INTENT(INOUT)::ILOCALSTENCIL
 	INTEGER,INTENT(IN)::NUMNEIGHBOURS
@@ -1536,6 +1564,8 @@ END SUBROUTINE ALLOCATEVECTORS
 !!!!!!!!!!!!!!!!!!!KIT IS INITIALLY USED FOR FIRST LEVEL!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!NEIGHBOURS AND IT IS GOING TO BE MODIFIED!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 SUBROUTINE FIND_SHAPE(N,IMAXE,IESHAPE)
+!> @brief
+!> This subroutine finds the shape of each cell
 	IMPLICIT NONE
 	INTEGER,INTENT(INOUT)::IMAXE
 	integer,ALLOCATABLE,DIMENSION(:),INTENT(INOUT)::IESHAPE
@@ -1662,20 +1692,20 @@ IF (N.EQ.0)THEN
 OPEN(63,FILE='history.txt',FORM='FORMATTED',ACTION='WRITE',POSITION='APPEND')
 	
 !-------------------FOR DEBUGGING ONLY -----------------------------------------!
-	WRITE(63,*),"------------UNSTRUCTURED FLUID DYNAMICS SOLVER ------------"
-	WRITE(63,*),"-----------------------GRID  TYPE--------------------------"
+	WRITE(63,*)"------------UNSTRUCTURED FLUID DYNAMICS SOLVER ------------"
+	WRITE(63,*)"-----------------------GRID  TYPE--------------------------"
 	IF (DIMENSIONA.EQ.3 )THEN
-	WRITE(63,*),"-----------------------3D MODE--------------------------"
+	WRITE(63,*)"-----------------------3D MODE--------------------------"
 	ELSE
-	WRITE(63,*),"-----------------------2D MODE--------------------------"
+	WRITE(63,*)"-----------------------2D MODE--------------------------"
 	END IF
 	!IF ((L.GT.0).AND.((K.GT.0).OR.(M.GT.0).OR.(N.GT.0)))THEN
-	WRITE(63,*),K,"HEXAHEDRAL ELEMENTS"
-	WRITE(63,*),L,"TETRAHEDRAL ELEMENTS"
-	WRITE(63,*),M,"PYRAMIDAL ELEMENTS"
-	WRITE(63,*),KK,"PRISMATIC ELEMENTS"
-	WRITE(63,*),ll,"QUADRILATERAL ELEMENTS"
-	WRITE(63,*),mm,"TRIANGULAR ELEMENTS"
+	WRITE(63,*)K,"HEXAHEDRAL ELEMENTS"
+	WRITE(63,*)L,"TETRAHEDRAL ELEMENTS"
+	WRITE(63,*)M,"PYRAMIDAL ELEMENTS"
+	WRITE(63,*)KK,"PRISMATIC ELEMENTS"
+	WRITE(63,*)ll,"QUADRILATERAL ELEMENTS"
+	WRITE(63,*)mm,"TRIANGULAR ELEMENTS"
 	!END IF
 	
 	
@@ -1696,6 +1726,8 @@ END IF
 END SUBROUTINE FIND_SHAPE
 ! ---------------------------------------------------------------------------------------------!
 SUBROUTINE NEIGHBOURSS(N,IELEM,IMAXE,IMAXN,XMPIE,XMPIN,XMPIELRANK,RESTART,INODEr)
+!> @brief
+!> This subroutine finds the neighbours
 IMPLICIT NONE
 TYPE(ELEMENT_NUMBER),ALLOCATABLE,DIMENSION(:,:),INTENT(INOUT)::IELEM
 TYPE(NODE_NE),ALLOCATABLE,DIMENSION(:),INTENT(INOUT)::INODEr
@@ -1739,7 +1771,7 @@ REAL::DELTA,CPUER
 	IELEM(N,I)%NODES_FACES(1:5,1:4)=0
 	
 	IELEM(N,I)%INEIGHG(1:5)=0
-	IELEM(N,I)%ifca=5; IELEM(N,I)%dec=8
+	IELEM(N,I)%ifca=5; 
 	IELEM(N,I)%VDEC=3
 	
 	IELEM(N,I)%TOTVOLUME=0.0;IELEM(N,I)%MINEDGE=0.0;IELEM(N,I)%WALLDIST=0.0
@@ -1782,7 +1814,7 @@ REAL::DELTA,CPUER
 	if (fastest.eq.0)then
 	allocate(ielem(n,i)%indexi(ielem(n,i)%ifca));ielem(n,i)%indexi(:)=0
 	end if
-	if (rungekutta.ge.3)then
+	if (rungekutta.ge.2)then
 	  allocate(ielem(n,i)%dih(ielem(n,i)%ifca)); ielem(n,i)%dih=zero
 ! 	  allocate(ielem(n,i)%dih2(ielem(n,i)%ifca,DIMS)); ielem(n,i)%dih2=zero
 	  
@@ -1846,7 +1878,7 @@ REAL::DELTA,CPUER
 	if (fastest.eq.0)then
 	allocate(ielem(n,i)%indexi(ielem(n,i)%ifca));ielem(n,i)%indexi(:)=0
 	end if
-	if (rungekutta.ge.3)then
+	if (rungekutta.ge.2)then
 	  allocate(ielem(n,i)%dih(ielem(n,i)%ifca)); ielem(n,i)%dih=zero
 ! 	  allocate(ielem(n,i)%dih2(ielem(n,i)%ifca,DIMS)); ielem(n,i)%dih2=zero
 ! 	  
@@ -1863,7 +1895,7 @@ REAL::DELTA,CPUER
 	IELEM(N,I)%INEIGHG=0
 	IELEM(N,I)%VDEC=1
 	IELEM(N,I)%TOTVOLUME=0.0;IELEM(N,I)%MINEDGE=0.0;IELEM(N,I)%WALLDIST=0.0
-	  IELEM(N,I)%ifca=4; IELEM(N,I)%dec=4
+	  IELEM(N,I)%ifca=4; 
 	!FIRST FACE
 	IELEM(N,I)%NODES_FACES(1,1)=IELEM(N,I)%NODES(2)
 	IELEM(N,I)%NODES_FACES(1,2)=IELEM(N,I)%NODES(4)
@@ -1889,7 +1921,7 @@ REAL::DELTA,CPUER
 	if (fastest.eq.0)then
 	allocate(ielem(n,i)%indexi(ielem(n,i)%ifca));ielem(n,i)%indexi(:)=0
 	end if
-	if (rungekutta.ge.3)then
+	if (rungekutta.ge.2)then
 	  allocate(ielem(n,i)%dih(ielem(n,i)%ifca)); ielem(n,i)%dih=zero
 ! 	  allocate(ielem(n,i)%dih2(ielem(n,i)%ifca,DIMS)); ielem(n,i)%dih2=zero
 	  
@@ -1905,7 +1937,7 @@ REAL::DELTA,CPUER
 	IELEM(N,I)%INEIGHG=0
 	IELEM(N,I)%VDEC=2
 	IELEM(N,I)%TOTVOLUME=0.0;IELEM(N,I)%MINEDGE=0.0;IELEM(N,I)%WALLDIST=0.0
-	 IELEM(N,I)%ifca=5; IELEM(N,I)%dec=6
+	 IELEM(N,I)%ifca=5; 
 	!FIRST FACE
 	IELEM(N,I)%NODES_FACES(1,1)=IELEM(N,I)%NODES(4)		!432,421
 	IELEM(N,I)%NODES_FACES(1,2)=IELEM(N,I)%NODES(3)
@@ -1938,7 +1970,7 @@ REAL::DELTA,CPUER
 ! 	IELEM(N,I)%DEC_FACES(5,1:3)=IELEM(N,I)%NODES_FACES(4,1:3)
 ! 	IELEM(N,I)%DEC_FACES(6,1:3)=IELEM(N,I)%NODES_FACES(5,1:3)
 
-	  if (rungekutta.ge.3)then
+	  if (rungekutta.ge.2)then
 	  allocate(ielem(n,i)%dih(ielem(n,i)%ifca)); ielem(n,i)%dih=zero
 ! 	  allocate(ielem(n,i)%dih2(ielem(n,i)%ifca,DIMS)); ielem(n,i)%dih2=zero
 	  
@@ -1956,7 +1988,7 @@ REAL::DELTA,CPUER
 
 
 	CASE(5) !quadrilateral
-	IELEM(N,I)%ifca=4; IELEM(N,I)%dec=4
+	IELEM(N,I)%ifca=4; 
 	allocate(IELEM(N,I)%NODES_FACES(4,2))
 	allocate(IELEM(N,I)%INEIGHG(4))
 	IELEM(N,I)%NODES_FACES(:,:)=0
@@ -1987,13 +2019,13 @@ REAL::DELTA,CPUER
 	if (fastest.eq.0)then
 	allocate(ielem(n,i)%indexi(ielem(n,i)%ifca));ielem(n,i)%indexi(:)=0
 	end if
-	if (rungekutta.ge.3)then
+	if (rungekutta.ge.2)then
 	  allocate(ielem(n,i)%dih(ielem(n,i)%ifca)); ielem(n,i)%dih=zero
 ! 	  allocate(ielem(n,i)%dih2(ielem(n,i)%ifca,DIMS)); ielem(n,i)%dih2=zero
 	  
 	end if
 	CASE(6) !Triangular
-	IELEM(N,I)%ifca=3; IELEM(N,I)%dec=3
+	IELEM(N,I)%ifca=3; 
 	allocate(IELEM(N,I)%NODES_FACES(3,2))
 	allocate(IELEM(N,I)%INEIGHG(3))
 	IELEM(N,I)%NODES_FACES(:,:)=0
@@ -2023,7 +2055,7 @@ REAL::DELTA,CPUER
 
 
 
-	 if (rungekutta.ge.3)then
+	 if (rungekutta.ge.2)then
 	  allocate(ielem(n,i)%dih(ielem(n,i)%ifca)); ielem(n,i)%dih=zero
 ! 	  allocate(ielem(n,i)%dih2(ielem(n,i)%ifca,DIMS)); ielem(n,i)%dih2=zero
 	  
@@ -2252,6 +2284,8 @@ END SUBROUTINE NEIGHBOURSS
 
 SUBROUTINE CONS(N,ICONR,ICONS,IPERIODICITY,XMPIELRANK,ISIZE,ICONRPA,ICONRPM,ICONSPO,XPER,&
 YPER,ZPER,ICONRPF,NUMNEIGHBOURS,TYPESTEN)
+!> @brief
+!> This subroutine establishes the connectivity across different cpus
 IMPLICIT NONE
 INTEGER,INTENT(IN)::IPERIODICITY,N,ISIZE,NUMNEIGHBOURS,TYPESTEN
 REAL::SMALL,DIST
@@ -2618,6 +2652,8 @@ END DO
 						    ICONSPO(K)%WHICHTHEY(I,1)=ICONRPA(N)%WHICHI(KJ,3);go to 401
 						    end if
 						    end if
+						    
+						    
 						    if (((abs(vext(2,3)-Zper).lt.tolsmall).or.(abs((abs(vext(2,3)-Zper))-Zper).lt.tolsmall)).and.&
 						    ((abs(vext(1,3)-Zper).lt.tolsmall).or.(abs((abs(vext(1,3)-Zper))-Zper).lt.tolsmall)))then
 						    if ((abs(vext(2,2)-vext(1,2)).lt.tolsmall).and.(abs(vext(2,1)-vext(1,1)).lt.tolsmall))then
@@ -2625,6 +2661,7 @@ END DO
 	      ! 				      if (((abs(dist-xper)).lt.TOLSMALL).or.((abs(dist-yper)).lt.TOLSMALL).or.((abs(dist-zper)).lt.TOLSMALL))then
 
 						  ICONSPO(K)%WHICHTHEY(I,1)=ICONRPA(N)%WHICHI(KJ,3);go to 401
+						  
 						    end if
 						    end if
 
@@ -2716,6 +2753,8 @@ END SUBROUTINE CONS
 
 SUBROUTINE CONS2d(N,ICONR,ICONS,IPERIODICITY,XMPIELRANK,ISIZE,ICONRPA,ICONRPM,ICONSPO,XPER,&
 YPER,ZPER,ICONRPF,NUMNEIGHBOURS,TYPESTEN)
+!> @brief
+!> This subroutine establishes the connectivity across different cpus in 2D
 IMPLICIT NONE
 INTEGER,INTENT(IN)::IPERIODICITY,N,ISIZE,NUMNEIGHBOURS,TYPESTEN
 REAL::SMALL,DIST
@@ -3189,6 +3228,8 @@ END SUBROUTINE CONS2d
 SUBROUTINE DETSTENX(N,ISIZE,IELEM,ISELEMT,XMPIELRANK,ILOCALALLS,TYPESTEN,&
 ILOCALALLELG,STCON,STCONC,STCONS,STCONG,ISOSA,IX,IISTART,IFSAT,PARE,DOSE,PAREEL,DOSEEL,&
 PARES,SOSEEL,XMPIE,IFIN,TFIN,XMPIL,GLNEIGH)
+!> @brief
+!> This subroutine builds the large stencils
 IMPLICIT NONE
 TYPE(ELEMENT_NUMBER),ALLOCATABLE,DIMENSION(:,:),INTENT(INout)::IELEM
 INTEGER,INTENT(IN)::N,TYPESTEN,ISIZE
@@ -3665,6 +3706,8 @@ END SUBROUTINE DETSTENX
 ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 RECURSIVE SUBROUTINE ALLSX(N,ISIZE,IELEM,STCON,STCONC,STCONS,STCONG,ISELEMT,ILOCALALLS,&
 ILOCALALLELG,XMPIE,ISOSA,IFSAT,IISTART,IX,XMPIELRANK,PARE,DOSE,PAREEL,DOSEEL,PARES,SOSEEL,IFIN,TFIN,XMPIL,GLNEIGH)
+!> @brief
+!> This recursive subroutine builds the large stencils until the prescribed number of elements is reached
 IMPLICIT NONE
 INTEGER,INTENT(IN)::N,ISIZE
 TYPE(ELEMENT_NUMBER),ALLOCATABLE,DIMENSION(:,:),INTENT(IN)::IELEM
@@ -3756,6 +3799,8 @@ END SUBROUTINE ALLSX
 SUBROUTINE DETSTEN(N,ISIZE,IELEM,ISELEMT,XMPIELRANK,ILOCALALLS,TYPESTEN,&
 ILOCALALLELG,STCON,STCONC,STCONS,STCONG,ISOSA,IX,IISTART,IFSAT,PARE,DOSE,PAREEL,DOSEEL,&
 PARES,SOSEEL,XMPIE,IFIN,TFIN,XMPIL,GLNEIGH)
+!> @brief
+!> This subroutine builds the large stencils suitable for periodic boundaries
 IMPLICIT NONE
 TYPE(ELEMENT_NUMBER),ALLOCATABLE,DIMENSION(:,:),INTENT(INout)::IELEM
 INTEGER,INTENT(IN)::N,TYPESTEN,ISIZE
@@ -4202,6 +4247,8 @@ END SUBROUTINE DETSTEN
 ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 RECURSIVE SUBROUTINE ALLS(N,ISIZE,IELEM,STCON,STCONC,STCONS,STCONG,ISELEMT,ILOCALALLS,&
 ILOCALALLELG,XMPIE,ISOSA,IFSAT,IISTART,IX,XMPIELRANK,PARE,DOSE,PAREEL,DOSEEL,PARES,SOSEEL,IFIN,TFIN,XMPIL,GLNEIGH)
+!> @brief
+!> This recursive subroutine builds the large stencils suitable for periodic boundaries
 IMPLICIT NONE
 INTEGER,INTENT(IN)::N,ISIZE
 TYPE(ELEMENT_NUMBER),ALLOCATABLE,DIMENSION(:,:),INTENT(IN)::IELEM
@@ -4279,6 +4326,8 @@ END SUBROUTINE ALLS
 
 
 SUBROUTINE CHECK(N,STCON,IX,ILOCALALLELG,IFSAT,ISELEMT)
+!> @brief
+!> This subroutine checks if some candidate elements already belong to the an existing list of neighbours
 IMPLICIT NONE
 INTEGER,INTENT(IN)::N
 INTEGER,ALLOCATABLE,DIMENSION(:),INTENT(INOUT)::IFSAT
@@ -4306,6 +4355,8 @@ END SUBROUTINE CHECK
 
 
 SUBROUTINE CHECK_CONDITION(N,IWHICHSTEN,ISATISFIED,IPERIODICITY,XPER,YPER,ZPER,ISHYAPE,ISSF,BC,VC,VG)
+!> @brief
+!> This subroutine checks which candidate cells satisfy the directionality condition for directional stencils
 IMPLICIT NONE
 INTEGER,INTENT(IN)::N,IPERIODICITY
 REAL,INTENT(IN)::XPER,YPER,ZPER
@@ -4482,6 +4533,8 @@ end select
 
 
 subroutine sortstencils(N)
+!> @brief
+!> This subroutine sorts the stencils with respect to their distance from the cell-centre
 implicit none
 INTEGER,INTENT(IN)::N
 real,dimension(iselemt(n))::rdistl
@@ -4535,6 +4588,8 @@ end subroutine sortstencils
 
 SUBROUTINE STENCIILS_EESX(N,IELEM,ILOCALALLELG,TYPESTEN,ILOCALSTENCIL,NUMNEIGHBOURS,ISELEMT,XMPIE,&
 XMPIELRANK,ISIZE,BC,VC,VG,ISATISFIED,IWHICHSTEN,IPERIODICITY,XPER,YPER,ZPER,ISSF,ISHYAPE,XMPIL,CENTERR)
+!> @brief
+!> This subroutine builds all the directional stencils from the large stencil
 IMPLICIT NONE
 INTEGER,INTENT(IN)::N,TYPESTEN,NUMNEIGHBOURS,ISIZE,IPERIODICITY,ISSF
 INTEGER,ALLOCATABLE,DIMENSION(:,:,:,:),INTENT(INOUT)::ILOCALALLELG	
@@ -4903,6 +4958,8 @@ END SUBROUTINE STENCIILS_EESX
 
 SUBROUTINE STENCIILS_EES(N,IELEM,ILOCALALLELG,TYPESTEN,ILOCALSTENCIL,NUMNEIGHBOURS,ISELEMT,XMPIE,&
 XMPIELRANK,ISIZE,BC,VC,VG,ISATISFIED,IWHICHSTEN,IPERIODICITY,XPER,YPER,ZPER,ISSF,ISHYAPE,XMPIL,CENTERR)
+!> @brief
+!> This subroutine builds all the directional stencils from the large stencil (suitable for periodic boundaries)
 IMPLICIT NONE
 INTEGER,INTENT(IN)::N,TYPESTEN,NUMNEIGHBOURS,ISIZE,IPERIODICITY,ISSF
 INTEGER,ALLOCATABLE,DIMENSION(:,:,:,:),INTENT(INOUT)::ILOCALALLELG	
@@ -5268,6 +5325,8 @@ END SUBROUTINE STENCIILS_EES
 
 SUBROUTINE STENCIILSX(N,IELEM,ILOCALALLELG,TYPESTEN,ILOCALSTENCIL,NUMNEIGHBOURS,ISELEMT,XMPIE,&
 XMPIELRANK,ISIZE,BC,VC,VG,ISATISFIED,IWHICHSTEN,IPERIODICITY,XPER,YPER,ZPER,ISSF,ISHYAPE,XMPIL,CENTERR)
+!> @brief
+!> This subroutine builds all the directional stencils from the large stencil based on various aglorithms
 IMPLICIT NONE
 INTEGER,INTENT(IN)::N,TYPESTEN,NUMNEIGHBOURS,ISIZE,IPERIODICITY,ISSF
 INTEGER,ALLOCATABLE,DIMENSION(:,:,:,:),INTENT(INOUT)::ILOCALALLELG	
@@ -5572,6 +5631,8 @@ END SUBROUTINE STENCIILSX
 
 SUBROUTINE STENCIILS(N,IELEM,ILOCALALLELG,TYPESTEN,ILOCALSTENCIL,NUMNEIGHBOURS,ISELEMT,XMPIE,&
 XMPIELRANK,ISIZE,BC,VC,VG,ISATISFIED,IWHICHSTEN,IPERIODICITY,XPER,YPER,ZPER,ISSF,ISHYAPE,XMPIL,CENTERR)
+!> @brief
+!> This subroutine builds all the directional stencils from the large stencil based on various algorithms (suitable for period boundaries)
 IMPLICIT NONE
 INTEGER,INTENT(IN)::N,TYPESTEN,NUMNEIGHBOURS,ISIZE,IPERIODICITY,ISSF
 INTEGER,ALLOCATABLE,DIMENSION(:,:,:,:),INTENT(INOUT)::ILOCALALLELG	
@@ -5861,6 +5922,8 @@ END SUBROUTINE STENCIILS
 ! !!!!!!!!!!!!!!!!!!!!!!REQUIRED FOR EACH STENCIL!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! !!!!!!!!!!!!!!!!!!!!!FOR VARIOUS ORDER OF ACCURACY!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 SUBROUTINE DETERMINE_SIZE(N,IORDER,ISELEM,ISELEMT,IOVERST,IOVERTO,ILX,NUMNEIGHBOURS,IDEGFREE,IMAXDEGFREE,IEXTEND)
+!> @brief
+!> This subroutine determines the degress of freedom, neighbours and polynomial order for each stencil of each cell
 	IMPLICIT NONE
 	INTEGER,INTENT(INOUT)::IORDER
 	INTEGER,ALLOCATABLE,DIMENSION(:),INTENT(INOUT)::ISELEMT
@@ -5917,7 +5980,7 @@ SUBROUTINE DETERMINE_SIZE(N,IORDER,ISELEM,ISELEMT,IOVERST,IOVERTO,ILX,NUMNEIGHBO
 	
 	idegfree2=3
 	IORDER2=1
-	NUMNEIGHBOURS2=12
+	NUMNEIGHBOURS2=9
 	
 	
 	
@@ -5941,13 +6004,13 @@ SUBROUTINE DETERMINE_SIZE(N,IORDER,ISELEM,ISELEMT,IOVERST,IOVERTO,ILX,NUMNEIGHBO
 	CASE (1,2,3)
 	idegfree2=2
 	IORDER2=1
-	NUMNEIGHBOURS2=6
+	NUMNEIGHBOURS2=5
 	
 	
 	CASE(4,5,6,7)
 	idegfree2=2
 	IORDER2=1
-	NUMNEIGHBOURS2=6
+	NUMNEIGHBOURS2=5
 	
 	
 	END SELECT
@@ -5964,7 +6027,7 @@ SUBROUTINE DETERMINE_SIZE(N,IORDER,ISELEM,ISELEMT,IOVERST,IOVERTO,ILX,NUMNEIGHBO
 	IOVERTO=ISELEM
 	IORDER2=1
 	idegfree2=2
-	NUMNEIGHBOURS2=6
+	NUMNEIGHBOURS2=5
 	
 	END IF
 
@@ -5994,6 +6057,8 @@ SUBROUTINE DETERMINE_SIZE(N,IORDER,ISELEM,ISELEMT,IOVERST,IOVERTO,ILX,NUMNEIGHBO
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !---------------------------------------------------------------------------------------------!	
 SUBROUTINE GAUSSIANPOINTS(IGQRULES,NUMBEROFPOINTS,NUMBEROFPOINTS2)
+!> @brief
+!> This subroutine determines quadrature points required for each spatial order of accuracy and for each cell type
 IMPLICIT NONE
 INTEGER,INTENT(INOUT)::IGQRULES,NUMBEROFPOINTS,NUMBEROFPOINTS2
 if (dimensiona.eq.3)then
@@ -6088,6 +6153,8 @@ END SUBROUTINE GAUSSIANPOINTS
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 subroutine writeout
+!> @brief
+!> This subroutine is solely for debugging purposes
 integer::ijd,ic2,kmaxe,i
 real,allocatable,dimension(:)::xx,yy,zz
 kmaxe=xmpielrank(n)
@@ -6142,6 +6209,8 @@ end subroutine
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 SUBROUTINE STENCILS(N,IELEM,IMAXE,XMPIE,XMPIELRANK,ILOCALSTENCIL,TYPESTEN,NUMNEIGHBOURS,RESTART)
+!> @brief
+!> This subroutine is establishing which of the stencils are admissible and which cells can use the WENO algorithms
 	IMPLICIT NONE
 	TYPE(ELEMENT_NUMBER),ALLOCATABLE,DIMENSION(:,:),INTENT(INOUT)::IELEM
 	INTEGER,INTENT(IN)::N,IMAXE
@@ -6494,6 +6563,8 @@ SUBROUTINE STENCILS(N,IELEM,IMAXE,XMPIE,XMPIELRANK,ILOCALSTENCIL,TYPESTEN,NUMNEI
 	
 	
 	SUBROUTINE STENCILS3(N,IELEM,IMAXE,XMPIE,XMPIELRANK,ILOCALSTENCIL,TYPESTEN,NUMNEIGHBOURS,RESTART)
+	!> @brief
+!> This subroutine is establishing which of the stencils are admissible under different set of rules and which cells can use the WENO algorithms
 	IMPLICIT NONE
 	TYPE(ELEMENT_NUMBER),ALLOCATABLE,DIMENSION(:,:),INTENT(INOUT)::IELEM
 	INTEGER,INTENT(IN)::N,IMAXE
@@ -6530,31 +6601,25 @@ SUBROUTINE STENCILS(N,IELEM,IMAXE,XMPIE,XMPIELRANK,ILOCALSTENCIL,TYPESTEN,NUMNEI
 
 
 SUBROUTINE ADAPT_CRITERION
+!> @brief
+!> This subroutine is establishing a region for which to use a very high-order discretisation and a lower one outside this region
 	IMPLICIT NONE
 	INTEGER::KMAXE,I,FC
 	  KMAXE=XMPIELRANK(N)
 	  DO I=1,KMAXE
 	      FC=0
-	      IF (IELEM(N,I)%XXC.LT.-0.025)THEN
+	      IF (IELEM(N,I)%XXC.LT.-0.2)THEN
 	      FC=1
 
 	      END IF
-	       IF (IELEM(N,I)%XXC.GT.1.34)THEN
+	       IF (IELEM(N,I)%XXC.GT.0.2)THEN
 
 		FC=1
 	      END IF
-	       IF (IELEM(N,I)%YYC.GT.0.17)THEN
-		FC=1
-
-	      END IF
-
-	       IF (IELEM(N,I)%YYC.LT.-0.05)THEN
-
-		FC=1
-	      END IF
+	     
 
 	IF (FC.EQ.1)THEN
-		IELEM(N,I)%ADMIS=1
+		IELEM(N,I)%FULL=0
 
 	END IF
 
@@ -6571,6 +6636,8 @@ SUBROUTINE ADAPT_CRITERION
 !---------------------------------------------------------------------------------------------!	
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 SUBROUTINE WRITE_BLOCKS(N,XMPIELRANK,XMPINRANK,XMPIE,XMPIN,IELEM,INODE,IMAXN,IMAXE,IBOUND,IMAXB,XMPINNUMBER)
+!> @brief
+!> This subroutine is solely for debugging purposes
 IMPLICIT NONE
 TYPE(ELEMENT_NUMBER),ALLOCATABLE,DIMENSION(:,:),INTENT(INOUT)::IELEM
 TYPE(NODE_NUMBER),ALLOCATABLE,DIMENSION(:,:),INTENT(INOUT)::INODE

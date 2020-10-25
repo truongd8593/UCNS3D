@@ -14,6 +14,8 @@ IMPLICIT NONE
 ! ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! !!!!!!!!!!!!!!!!!!!!
 ! ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 SUBROUTINE INITIALISE(N)
+ !> @brief
+!> This subroutine calls the initialisation of the computational domain
 IMPLICIT NONE
 integer,INTENT(IN)::N
 REAL,allocatable,DIMENSION(:)::RG,ARG
@@ -98,7 +100,7 @@ IF (RESTART.EQ.0)THEN
 			poz(1)=IELEM(N,INITIAL)%zzC
 			CALL INITIALISE_EULER3D(N)
 			if ((turbulence .eq. 1).or.(passivescalar.gt.0)) then
-			U_C(INITIAL)%VAL(1,1:5)=VECCOS(1:5)
+			U_C(INITIAL)%VAL(1,1:nof_Variables)=VECCOS(1:nof_Variables)
 			U_CT(INITIAL)%VAL(1,1:0+turbulenceequations+passivescalar)=VECCOS(6:5+turbulenceequations+passivescalar)
 			else
 			U_C(INITIAL)%VAL(1,:)=VECCOS(:)
@@ -145,7 +147,7 @@ IF (RESTART.EQ.0)THEN
 			ELSE
 			CALL INITIALISE_EULER3D(N)
 			if ((turbulence .eq. 1).or.(passivescalar.gt.0)) then
-			U_C(I)%VAL(1,1:5)=U_C(I)%VAL(1,1:5)+VECCOS(1:5)*WEQUA3D(INC)*(VOLTEMP)
+			U_C(I)%VAL(1,1:nof_Variables)=U_C(I)%VAL(1,1:nof_Variables)+VECCOS(1:nof_Variables)*WEQUA3D(INC)*(VOLTEMP)
 			U_CT(I)%VAL(1,1:0+turbulenceequations+passivescalar)=U_CT(I)%VAL(1,1:0+turbulenceequations+passivescalar)+&
 			VECCOS(6:5+turbulenceequations+passivescalar)*WEQUA3D(INC)*(VOLTEMP)
 			else
@@ -177,7 +179,7 @@ IF (RESTART.EQ.0)THEN
 			ELSE
 			CALL INITIALISE_EULER3D(N)
 			if ((turbulence .eq. 1).or.(passivescalar.gt.0)) then
-			U_C(I)%VAL(1,1:5)=U_C(I)%VAL(1,1:5)+VECCOS(1:5)*WEQUA3D(INC)*(VOLTEMP)
+			U_C(I)%VAL(1,1:nof_Variables)=U_C(I)%VAL(1,1:nof_Variables)+VECCOS(1:nof_Variables)*WEQUA3D(INC)*(VOLTEMP)
 			U_CT(I)%VAL(1,1:0+turbulenceequations+passivescalar)=U_CT(I)%VAL(1,1:0+turbulenceequations+passivescalar)+&
 			VECCOS(6:5+turbulenceequations+passivescalar)*WEQUA3D(INC)*(VOLTEMP)
 			else
@@ -214,7 +216,7 @@ IF (RESTART.EQ.0)THEN
 			ELSE
 			CALL INITIALISE_EULER3D(N)
 			if ((turbulence .eq. 1).or.(passivescalar.gt.0)) then
-			U_C(I)%VAL(1,1:5)=U_C(I)%VAL(1,1:5)+VECCOS(1:5)*WEQUA3D(INC)*(VOLTEMP)
+			U_C(I)%VAL(1,1:nof_Variables)=U_C(I)%VAL(1,1:nof_Variables)+VECCOS(1:nof_Variables)*WEQUA3D(INC)*(VOLTEMP)
 			U_CT(I)%VAL(1,1:0+turbulenceequations+passivescalar)=U_CT(I)%VAL(1,1:0+turbulenceequations+passivescalar)+&
 			VECCOS(6:5+turbulenceequations+passivescalar)*WEQUA3D(INC)*(VOLTEMP)
 			else
@@ -244,7 +246,7 @@ IF (RESTART.EQ.0)THEN
 			ELSE
 			CALL INITIALISE_EULER3D(N)
 			if ((turbulence .eq. 1).or.(passivescalar.gt.0)) then
-			U_C(I)%VAL(1,1:5)=U_C(I)%VAL(1,1:5)+VECCOS(1:5)*WEQUA3D(INC)*(VOLTEMP)
+			U_C(I)%VAL(1,1:nof_Variables)=U_C(I)%VAL(1,1:nof_Variables)+VECCOS(1:nof_Variables)*WEQUA3D(INC)*(VOLTEMP)
 			U_CT(I)%VAL(1,1:0+turbulenceequations+passivescalar)=U_CT(I)%VAL(1,1:0+turbulenceequations+passivescalar)+&
 			VECCOS(6:5+turbulenceequations+passivescalar)*WEQUA3D(INC)*(VOLTEMP)
 			else
@@ -275,7 +277,7 @@ IF (RESTART.EQ.0)THEN
 			ELSE
 			CALL INITIALISE_EULER3D(N)
 			if ((turbulence .eq. 1).or.(passivescalar.gt.0)) then
-			U_C(I)%VAL(1,1:5)=U_C(I)%VAL(1,1:5)+VECCOS(1:5)*WEQUA3D(INC)*(VOLTEMP)
+			U_C(I)%VAL(1,1:nof_Variables)=U_C(I)%VAL(1,1:nof_Variables)+VECCOS(1:nof_Variables)*WEQUA3D(INC)*(VOLTEMP)
 			U_CT(I)%VAL(1,1:0+turbulenceequations+passivescalar)=U_CT(I)%VAL(1,1:0+turbulenceequations+passivescalar)+&
 			VECCOS(6:5+turbulenceequations+passivescalar)*WEQUA3D(INC)*(VOLTEMP)
 			else
@@ -303,7 +305,7 @@ IF (RESTART.EQ.0)THEN
 			ELSE
 			CALL INITIALISE_EULER3D(N)
 			if ((turbulence .eq. 1).or.(passivescalar.gt.0)) then
-			U_C(I)%VAL(1,1:5)=U_C(I)%VAL(1,1:5)+VECCOS(1:5)*WEQUA3D(INC)*(VOLTEMP)
+			U_C(I)%VAL(1,1:nof_Variables)=U_C(I)%VAL(1,1:nof_Variables)+VECCOS(1:nof_Variables)*WEQUA3D(INC)*(VOLTEMP)
 			U_CT(I)%VAL(1,1:0+turbulenceequations+passivescalar)=U_CT(I)%VAL(1,1:0+turbulenceequations+passivescalar)+&
 			VECCOS(6:5+turbulenceequations+passivescalar)*WEQUA3D(INC)*(VOLTEMP)
 			else
@@ -781,6 +783,8 @@ END SUBROUTINE INITIALISE
 
 
 SUBROUTINE INITIALISE2d(N)
+ !> @brief
+!> This subroutine calls the initialisation of the computational domain in 2D
 IMPLICIT NONE
 integer,INTENT(IN)::N
 REAL,allocatable,DIMENSION(:)::RG,ARG
@@ -859,7 +863,7 @@ IF (RESTART.EQ.0)THEN
 		
 			CALL INITIALISE_EULER2D(N)
 			if ((turbulence .eq. 1).or.(passivescalar.gt.0)) then
-			U_C(INITIAL)%VAL(1,1:4)=VECCOS(1:4)
+			U_C(INITIAL)%VAL(1,1:nof_Variables)=VECCOS(1:nof_Variables)
 			U_CT(INITIAL)%VAL(1,1:0+turbulenceequations+passivescalar)=VECCOS(5:4+turbulenceequations+passivescalar)
 			else
 			U_C(INITIAL)%VAL(1,:)=VECCOS(:)
@@ -916,7 +920,7 @@ IF (RESTART.EQ.0)THEN
 			CALL INITIALISE_EULER2D(N)
 			
 			if ((turbulence .eq. 1).or.(passivescalar.gt.0)) then
-			U_C(I)%VAL(1,1:4)=U_C(I)%VAL(1,1:4)+VECCOS(1:4)*WEQUA3D(INC)*(VOLTEMP)
+			U_C(I)%VAL(1,1:nof_Variables)=U_C(I)%VAL(1,1:nof_Variables)+VECCOS(1:nof_Variables)*WEQUA3D(INC)*(VOLTEMP)
 			U_CT(I)%VAL(1,1:0+turbulenceequations+passivescalar)=U_CT(I)%VAL(1,1:0+turbulenceequations+passivescalar)+&
 			VECCOS(5:4+turbulenceequations+passivescalar)*WEQUA3D(INC)*(VOLTEMP)
 			else
@@ -949,7 +953,7 @@ IF (RESTART.EQ.0)THEN
 			ELSE
 			CALL INITIALISE_EULER2D(N)
 			if ((turbulence .eq. 1).or.(passivescalar.gt.0)) then
-			U_C(I)%VAL(1,1:4)=U_C(I)%VAL(1,1:4)+VECCOS(1:4)*WEQUA3D(INC)*(VOLTEMP)
+			U_C(I)%VAL(1,1:nof_Variables)=U_C(I)%VAL(1,1:nof_Variables)+VECCOS(1:nof_Variables)*WEQUA3D(INC)*(VOLTEMP)
 			U_CT(I)%VAL(1,1:0+turbulenceequations+passivescalar)=U_CT(I)%VAL(1,1:0+turbulenceequations+passivescalar)+&
 			VECCOS(5:4+turbulenceequations+passivescalar)*WEQUA3D(INC)*(VOLTEMP)
 			else
@@ -986,7 +990,7 @@ IF (RESTART.EQ.0)THEN
 			ELSE
 			CALL INITIALISE_EULER2D(N)
 			if ((turbulence .eq. 1).or.(passivescalar.gt.0)) then
-			U_C(I)%VAL(1,1:4)=U_C(I)%VAL(1,1:4)+VECCOS(1:4)*WEQUA3D(INC)*(VOLTEMP)
+			U_C(I)%VAL(1,1:nof_Variables)=U_C(I)%VAL(1,1:nof_Variables)+VECCOS(1:nof_Variables)*WEQUA3D(INC)*(VOLTEMP)
 			U_CT(I)%VAL(1,1:0+turbulenceequations+passivescalar)=U_CT(I)%VAL(1,1:0+turbulenceequations+passivescalar)+&
 			VECCOS(5:4+turbulenceequations+passivescalar)*WEQUA3D(INC)*(VOLTEMP)
 			else
