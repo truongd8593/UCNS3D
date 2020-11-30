@@ -15,7 +15,7 @@ subroutine tolerances
 !> This subroutine specifies the tolerances and other fixed numbers used throughout the code
 implicit none
 
-tolsmall=1.0e-8
+tolsmall=1.0e-10
 TOLBIG=1.0E+13
 oo2=1.0d0/2.0d0
 zero=0.0d0
@@ -5953,13 +5953,13 @@ SUBROUTINE DETERMINE_SIZE(N,IORDER,ISELEM,ISELEMT,IOVERST,IOVERTO,ILX,NUMNEIGHBO
 	CASE (1,2,3)
 	idegfree2=3
 	IORDER2=1
-	NUMNEIGHBOURS2=7
+	NUMNEIGHBOURS2=9
 	
 	
 	CASE(4,5,6,7)
 	idegfree2=3
 	IORDER2=1
-	NUMNEIGHBOURS2=7
+	NUMNEIGHBOURS2=9
 	
 	
 	END SELECT
@@ -6608,18 +6608,33 @@ SUBROUTINE ADAPT_CRITERION
 	  KMAXE=XMPIELRANK(N)
 	  DO I=1,KMAXE
 	      FC=0
-	      IF (IELEM(N,I)%XXC.LT.-0.2)THEN
+	      IF (IELEM(N,I)%YYC.LT.0.03)THEN
 	      FC=1
 
 	      END IF
-	       IF (IELEM(N,I)%XXC.GT.0.2)THEN
+	       IF (IELEM(N,I)%YYC.GT.0.08)THEN
 
 		FC=1
 	      END IF
-	     
+	      IF (IELEM(N,I)%XXC.LT.0.025)THEN
+	      FC=1
+
+	      END IF
+	       IF (IELEM(N,I)%XXC.GT.0.18)THEN
+
+		FC=1
+	      END IF
+	     IF (IELEM(N,I)%zzC.LT.0.03)THEN
+	      FC=1
+
+	      END IF
+	       IF (IELEM(N,I)%zzC.GT.0.08)THEN
+
+		FC=1
+	      END IF
 
 	IF (FC.EQ.1)THEN
-		IELEM(N,I)%FULL=0
+		IELEM(N,I)%HYBRID=1
 
 	END IF
 

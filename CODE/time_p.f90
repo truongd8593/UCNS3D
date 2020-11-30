@@ -11,6 +11,7 @@ USE FLOW_OPERATIONS
 USE COMMUNICATIONS
 USE implicit_time
 USE implicit_FLUXES
+USE DECLARATION
 ! USE FLUXES_V
 USE IO
 IMPLICIT NONE
@@ -1602,8 +1603,8 @@ DO I=1,KMAXE
 
    
     IF (N.EQ.0)THEN
-    OPEN(133,FILE='STATISTICS.txt',FORM='FORMATTED',STATUS='old',ACTION='WRITE',POSITION='APPEND')
-    WRITE(133,'(I14,1X,E14.7,1X,E14.7,1X,E14.7,1X,E14.7,1X,E14.7,1X,E14.7,1X,E14.7,1X,E14.7,1X,E14.7)')it,PRACE_T8,PRACE_T6,PRACE_T1,PRACE_T3,PRACE_T7,prace_t2,prace_t4,prace_t5,flops_count
+    OPEN(133,FILE=STATFILE,FORM='FORMATTED',STATUS='old',ACTION='WRITE',POSITION='APPEND')
+    WRITE(133,'(I6,1X,E11.4,E11.4,E11.4,E11.4,E11.4,E11.4,E11.4,E11.4,E11.4)')it,PRACE_T8,PRACE_T6,PRACE_T1,PRACE_T3,PRACE_T7,prace_t2,prace_t4,prace_t5,flops_count
     CLOSE(133)
     END IF
     
@@ -2506,7 +2507,7 @@ if (lowmemory.eq.0)then
  end if
 
 !$OMP BARRIER 
-!$OMP DO SCHEDULE(GUIDED) REDUCTION(+:allresdt)
+!$OMP DO SCHEDULE(STATIC) REDUCTION(+:allresdt)
 DO I=1,KMAXE
       rsumfacei=sqrt(((IMPDU(I,1))**2)+((IMPDU(I,2))**2)+((IMPDU(I,3))**2)+((IMPDU(I,4))**2)+((IMPDU(I,5))**2))
       allresdt=allresdt+(rsumfacei*ielem(n,i)%totvolume)
@@ -2710,7 +2711,7 @@ if (lowmemory.eq.0)then
  end if
 
 !$OMP BARRIER 
-!$OMP DO SCHEDULE(GUIDED) REDUCTION(+:allresdt)
+!$OMP DO SCHEDULE(STATIC) REDUCTION(+:allresdt)
 DO I=1,KMAXE
       rsumfacei=sqrt(((IMPDU(I,1))**2)+((IMPDU(I,2))**2)+((IMPDU(I,3))**2)+((IMPDU(I,4))**2))
       allresdt=allresdt+(rsumfacei*ielem(n,i)%totvolume)
@@ -3164,8 +3165,9 @@ REAL::CPUT1,CPUT2,CPUT3,CPUT4,CPUT5,CPUT6,CPUT8,timec3,TIMEC1,TIMEC4,TIMEC8,TOTV
 
 ! 				end if
 			    end if
-                IF ((MULTISPECIES.EQ.1).and.(initcond.eq.408))THEN
-			    if ( mod(it, 20) .eq. 0)then
+           
+			    if((initcond.eq.408).or.(initcond.eq.422))THEN
+			    if ( mod(it, 40) .eq. 0)then
                     call TRAJECTORIES
 			    end if
 			    END IF
@@ -3396,11 +3398,13 @@ kmaxe=XMPIELRANK(n)
 
 ! 				end if
 			    end if
-			    IF ((MULTISPECIES.EQ.1).and.(initcond.eq.405))THEN
+			    IF ((MULTISPECIES.EQ.1))then
+			    if((initcond.eq.405).or.(initcond.eq.411))THEN
 			    if ( mod(it, 20) .eq. 0)then
                     call TRAJECTORIES
 			    end if
 			    END IF
+			    end if
 			
 			
 			
